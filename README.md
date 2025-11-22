@@ -1,232 +1,209 @@
-# WordPress Article Automation System
+# PBN Manager
 
-Система автоматического создания и публикации статей в WordPress с использованием OpenAI API.
+Система автоматического управления сетью WordPress сайтов (PBN - Private Blog Network).
 
 ## Возможности
 
-- 📝 Генерация качественного контента статей через GPT-4
-- 🖼️ Создание уникальных изображений для обложек через DALL-E
-- 📖 Чтение данных из CSV и Excel файлов
-- 🚀 Автоматическая публикация в WordPress через REST API
-- 🏷️ Создание и назначение категорий
-- 🔗 Естественное встраивание анкорных ссылок
-- 📊 Детальная статистика и отчеты
-- ⏱️ Управляемая задержка между публикациями
-- 🛡️ Обработка ошибок и логирование
-- ⏰ **Отложенная публикация с настраиваемым интервалом**
-- 🎯 **Нет необходимости держать скрипт запущенным**
+### Управление сетью
+- 📊 Централизованный реестр сайтов с шифрованием credentials
+- 🎭 Fingerprint Randomizer - уникальный профиль для каждого сайта
+- 🔄 Автоматическая установка WordPress через SSH
 
-## Установка
+### Генерация контента
+- 📝 AI-генерация статей через GPT-4 с вариативностью стилей
+- 🖼️ Создание изображений через DALL-E
+- 🎨 6+ стилей написания (формальный, дружелюбный, аналитический и др.)
+- 📐 5+ структур статей (классическая, listicle, how-to и др.)
 
-1. Клонируйте репозиторий:
+### Защита от обнаружения
+- 🎭 Разные темы WordPress для каждого сайта
+- 🔌 Вариативные наборы плагинов
+- ⏰ Рандомизация расписания публикаций
+- ✍️ Разные стили контента
+
+## Быстрый старт
+
+### 1. Установка
+
 ```bash
+# Клонируйте репозиторий
 git clone <repository-url>
 cd wordpress
-```
 
-2. Создайте виртуальное окружение:
-```bash
+# Создайте виртуальное окружение
 python -m venv venv
-source venv/bin/activate  # для Linux/Mac
-# или
-venv\Scripts\activate  # для Windows
-```
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate   # Windows
 
-3. Установите зависимости:
-```bash
+# Установите зависимости
 pip install -r requirements.txt
 ```
 
-## Конфигурация
+### 2. Конфигурация
 
-Создайте файл `.env` в корне проекта со следующими параметрами:
+```bash
+# Скопируйте пример конфигурации
+cp .env.example .env
 
-```env
-# WordPress
-WORDPRESS_URL=https://ваш-сайт.ru
-WORDPRESS_USERNAME=ваш_логин
-WORDPRESS_APP_PASSWORD=xxxxxxxxxxxxxxxxxxxx
+# Сгенерируйте ключ шифрования
+python pbn.py generate-key
 
-# OpenAI
-OPENAI_API_KEY=your_openai_api_key
-
-# Опциональные параметры
-OPENAI_MODEL=gpt-4
-DALLE_MODEL=dall-e-3
-TARGET_WORD_COUNT=1750
-DELAY_BETWEEN_POSTS=60
-PUBLISH_STATUS=publish
-GENERATE_IMAGES=true
-SAVE_LOCALLY=true
-
-# Планировщик (для отложенных публикаций)
-SCHEDULE_MODE=false
-SCHEDULE_INTERVAL_HOURS=52.0
-
-# Прокси (если Nginx блокирует REST API)
-PROXY_HTTP=http://proxy:port
-PROXY_HTTPS=https://proxy:port
+# Отредактируйте .env, добавьте:
+# - OPENAI_API_KEY
+# - ENCRYPTION_KEY (из предыдущей команды)
 ```
 
-### Настройка прокси для обхода блокировок
+### 3. Инициализация
 
-Если Nginx или файрвол блокирует REST API запросы, настройте прокси:
-
-```env
-# Прокси для HTTP и HTTPS запросов
-PROXY_HTTP=http://proxy.example.com:8080
-PROXY_HTTPS=http://proxy.example.com:8080
-
-# или с аутентификацией
-PROXY_HTTP=http://username:password@proxy.example.com:8080
-PROXY_HTTPS=http://username:password@proxy.example.com:8080
+```bash
+python pbn.py init
 ```
 
 ## Использование
 
-### Подготовка данных
-
-Создайте CSV или Excel файл со следующими столбцами:
-- `Рубрика` - категория статьи
-- `Тема статьи` - тема для генерации контента
-- `Анкор` - текст анкорной ссылки
-- `Ссылка` - URL для анкорной ссылки
-
-**Поддерживаемые разделители:** запятая (,) или точка с запятой (;)
-
-Пример файла смотрите в `examples/sample_articles.csv`.
-
-### Запуск
+### CLI команды
 
 ```bash
-# Основной запуск (немедленная публикация)
+# Помощь
+python pbn.py --help
+
+# Статистика по сети
+python pbn.py stats
+
+# Добавить сайт в реестр
+python pbn.py site-add example.com \
+    --wp-user admin \
+    --wp-password "xxxx xxxx xxxx xxxx" \
+    --generate-fingerprint
+
+# Список сайтов
+python pbn.py site-list
+python pbn.py site-list --status active
+
+# Информация о сайте
+python pbn.py site-info --domain example.com
+
+# Установить WordPress на новый сервер
+python pbn.py site-provision example.com \
+    --ssh-user root \
+    --ssh-key ~/.ssh/id_rsa \
+    --add-to-registry
+
+# Сгенерировать fingerprint
+python pbn.py fingerprint example.com --json
+```
+
+### Генерация контента (legacy)
+
+```bash
+# Публикация статей из CSV (старый способ)
 python main.py articles.csv
 
-# Отложенная публикация (по умолчанию интервал 52 часа)
-python main.py articles.csv --schedule
-
-# Тестовый режим (без публикации)
-python main.py articles.csv --dry-run
-
-# Проверка конфигурации
-python main.py --config-check
-```
-
-### Отложенная публикация
-
-Система создает статьи с запланированной датой публикации прямо в WordPress:
-
-```bash
-# Запланировать 6 статей с интервалом 52 часа (2 дня 4 часа)
+# С отложенной публикацией
 python main.py articles.csv --schedule
 ```
 
-Результат:
-- 1-я статья → через 1 час
-- 2-я статья → через 53 часа  
-- 3-я статья → через 105 часов
-- ... и так далее
-
-**Преимущества:**
-- WordPress автоматически публикует в указанное время
-- Нет необходимости держать скрипт запущенным
-- Надежность - работает даже при перезагрузке сервера
-- Простота управления через админку WordPress
-
-## Структура проекта
+## Архитектура
 
 ```
 wordpress/
-├── src/                    # Исходный код
-│   ├── __init__.py
-│   ├── data_reader.py      # Чтение CSV/Excel
-│   ├── content_generator.py # Генерация контента
-│   ├── image_generator.py  # Генерация изображений
-│   └── wordpress_publisher.py # Публикация в WordPress
-├── examples/               # Примеры файлов
-│   └── sample_articles.csv
-├── logs/                   # Логи выполнения
-├── reports/                # Отчеты о публикации
-├── images/                 # Сохраненные изображения
-├── main.py                 # Основной скрипт
-├── requirements.txt        # Зависимости
-├── README.md              # Документация
-└── .env                   # Конфигурация
+├── pbn_manager/              # Новая система PBN Manager
+│   ├── core/                 # Ядро системы
+│   │   ├── models.py         # SQLAlchemy модели
+│   │   ├── site_registry.py  # Управление сайтами
+│   │   ├── encryption.py     # Шифрование credentials
+│   │   └── fingerprint.py    # Генерация уникальных профилей
+│   ├── content/              # Генерация контента
+│   │   ├── generator.py      # AI-генератор с вариативностью
+│   │   └── variations.py     # Стили и структуры
+│   ├── wordpress/            # WordPress операции
+│   │   └── provisioner.py    # Автоустановка WP через SSH
+│   ├── cli/                  # CLI интерфейс
+│   │   └── commands.py       # Команды
+│   ├── api/                  # API для дашборда (в разработке)
+│   └── dashboard/            # Web-интерфейс (в разработке)
+├── src/                      # Legacy модули
+│   ├── content_generator.py  # Старый генератор
+│   ├── wordpress_publisher.py
+│   ├── image_generator.py
+│   └── data_reader.py
+├── config/
+│   └── settings.py           # Настройки
+├── data/                     # База данных и данные
+├── pbn.py                    # Entry point CLI
+├── main.py                   # Legacy entry point
+└── requirements.txt
 ```
 
-## Отчеты
+## Модели данных
 
-После выполнения работы система создает два отчета:
+### Site (Сайт)
+- Домен, URL, credentials (зашифрованы)
+- SSH доступ для провизии
+- Fingerprint профиль
+- Статистика публикаций
 
-1. **Детальный отчет** (JSON) - полная информация о каждой статье
-2. **Краткий отчет** (TXT) - сводная статистика и ссылки
+### Post (Пост)
+- Связь с сайтом
+- Метаданные контента
+- Ссылки (anchor, URL)
+- Статус публикации
 
-Отчеты сохраняются в директорию `reports/`.
+### ContentQueue (Очередь)
+- Задания на генерацию
+- Приоритеты и расписание
 
-## Как работает отложенная публикация
+### LinkStrategy (Стратегия ссылок)
+- Целевые URL
+- Распределение анкоров
+- Лимиты ссылок
 
-Система использует встроенную функциональность WordPress для планирования публикаций:
+## Fingerprint система
 
-1. **Расчет времени**: Скрипт рассчитывает время для каждой статьи
-2. **Создание записей**: Статьи создаются со статусом "future" 
-3. **Автоматическая публикация**: WordPress публикует статьи в указанное время
+Каждый сайт получает уникальный профиль:
 
-### Преимущества подхода:
+```python
+{
+    "theme": "flavor",         # Случайная тема
+    "plugins": ["flavor", "flavor"],  # Набор плагинов
+    "content_style": "formal_expert", # Стиль контента
+    "permalink_structure": "/%postname%/",
+    "timezone": "Europe/Moscow",
+    "post_frequency_days": 2.5,       # Частота публикаций
+    "post_time_range": [9, 18],       # Часы публикации
+    ...
+}
+```
 
-- 🎯 **Надежность**: WordPress сам следит за публикациями
-- 💾 **Сохранение при перезагрузке**: Все запланировано в базе данных
-- 📱 **Управление**: Можно изменить время через админку WordPress
-- 🔧 **Простота**: Не нужно дополнительно ПО или демоны
+## Стили контента
 
-## Важные замечания
+| Стиль | Описание |
+|-------|----------|
+| formal_expert | Серьёзный экспертный стиль |
+| casual_friendly | Дружелюбный разговорный |
+| practical_guide | Пошаговые инструкции |
+| storyteller | Нарративный с историями |
+| analytical | Глубокий анализ с данными |
+| news_reporter | Новостной стиль |
 
-1. **OpenAI API** - требуется платный аккаунт с доступом к GPT-4 и DALL-E
-2. **WordPress** - необходимо включить REST API и создать Application Passwords
-3. **Лимиты API** - скрипт учитывает задержки между запросами
-4. **Безопасность** - все ключи хранятся в `.env` файле
-5. **Часовой пояс** - WordPress использует время сервера, учитывайте это при планировании
+## Безопасность
 
-## Настройка WordPress
+- Все пароли шифруются Fernet (AES-128-CBC)
+- Credentials хранятся в зашифрованном виде в БД
+- Ключ шифрования отдельно в .env
 
-1. Убедитесь, что REST API включен (включен по умолчанию)
-2. Создайте Application Password:
-   - Перейдите в Профиль пользователя
-   - Прокрутите до раздела "Application Passwords"
-   - Введите название приложения и создайте пароль
-3. Используйте ваши данные в `.env` файле:
-   - `WORDPRESS_USERNAME` - ваш логин в WordPress
-   - `WORDPRESS_APP_PASSWORD` - созданный Application Password
+## Roadmap
 
-## Ошибки и решение проблем
-
-1. **Ошибка авторизации WordPress (401)** - проверьте правильность логина и Application Password
-2. **Ошибка доступа запрещена (403)** - настройте прокси в переменных окружения PROXY_HTTP и PROXY_HTTPS
-3. **Ошибка OpenAI API** - проверьте ключ и баланс аккаунта
-4. **Ошибка чтения файла** - проверьте формат CSV/Excel и названия столбцов
-5. **Категория не найдена** - скрипт создаст новую категорию автоматически
-
-### Проблемы с Nginx и REST API
-
-Если Nginx блокирует REST API запросы (ошибка 403), выполните следующие шаги:
-
-1. **Проверьте блокировку**: 
-   ```bash
-   curl -X GET https://ваш-сайт.ru/wp-json/wp/v2/posts
-   ```
-
-2. **Настройте прокси** в файле `.env`:
-   ```env
-   # Прокси для обхода блокировок
-   PROXY_HTTP=http://proxy.example.com:8080
-   PROXY_HTTPS=http://proxy.example.com:8080
-   ```
-
-3. **Перезапустите скрипт** - все запросы будут идти через прокси
-
-4. **Проверьте логи** для детальной диагностики:
-   ```bash
-   tail -f logs/wordpress_automation_*.log
-   ```
+- [x] Site Registry с шифрованием
+- [x] WordPress Provisioner (SSH)
+- [x] Fingerprint Randomizer
+- [x] Content Variations
+- [x] CLI интерфейс
+- [ ] Web Dashboard (FastAPI + React)
+- [ ] Celery workers для фоновых задач
+- [ ] Link Strategy Manager
+- [ ] Мониторинг и алерты
+- [ ] API для внешних интеграций
 
 ## Лицензия
 

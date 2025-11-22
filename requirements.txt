@@ -1,7 +1,35 @@
+# Core
 requests>=2.31.0
-openai>=1.0.0
 python-dotenv>=1.0.0
+
+# AI / Content Generation
+openai>=1.0.0
+
+# Data processing
 pandas>=2.0.0
-Pillow>=10.0.0
 openpyxl>=3.1.0
 xlrd>=2.0.0
+
+# Images
+Pillow>=10.0.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Security / Encryption
+cryptography>=41.0.0
+
+# SSH for provisioning
+paramiko>=3.0.0
+
+# Web API (for future dashboard)
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
+
+# CLI
+rich>=13.0.0  # Beautiful terminal output
+
+# Optional: Background tasks
+# celery>=5.3.0
+# redis>=4.0.0
