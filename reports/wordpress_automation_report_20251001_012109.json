@@ -1,0 +1,80 @@
+[
+  {
+    "article_data": {
+      "category": "Технические решения",
+      "topic": "ISP прокси: преимущества и сценарии использования",
+      "anchor": "isp прокси",
+      "url": "https://proxywing.com/ru/proxies-isp"
+    },
+    "status": "error",
+    "error": "Не удалось опубликовать статью",
+    "processing_time": 60.443261,
+    "scheduled_date": "2025-10-03T06:15:20.842039",
+    "timestamp": "2025-10-01T01:16:21.285378"
+  },
+  {
+    "article_data": {
+      "category": "Технические решения",
+      "topic": "В чем разница между ISP и другими видами прокси?",
+      "anchor": "",
+      "url": ""
+    },
+    "status": "error",
+    "error": "Не удалось опубликовать статью",
+    "processing_time": 45.814493,
+    "scheduled_date": "2025-10-05T10:15:20.842039",
+    "timestamp": "2025-10-01T01:17:09.105586"
+  },
+  {
+    "article_data": {
+      "category": "Технические решения",
+      "topic": "Почему ISP прокси пользуются спросом у бизнеса?",
+      "anchor": "",
+      "url": ""
+    },
+    "status": "error",
+    "error": "Не удалось опубликовать статью",
+    "processing_time": 46.532784,
+    "scheduled_date": "2025-10-07T14:15:20.842039",
+    "timestamp": "2025-10-01T01:17:57.643590"
+  },
+  {
+    "article_data": {
+      "category": "Технические решения",
+      "topic": "Как настроить ISP прокси для максимальной эффективности",
+      "anchor": "",
+      "url": ""
+    },
+    "status": "error",
+    "error": "Не удалось опубликовать статью",
+    "processing_time": 66.296136,
+    "scheduled_date": "2025-10-09T18:15:20.842039",
+    "timestamp": "2025-10-01T01:19:05.944971"
+  },
+  {
+    "article_data": {
+      "category": "Технические решения",
+      "topic": "Советы по выбору лучшего ISP прокси",
+      "anchor": "",
+      "url": ""
+    },
+    "status": "error",
+    "error": "Не удалось опубликовать статью",
+    "processing_time": 59.871702,
+    "scheduled_date": "2025-10-11T22:15:20.842039",
+    "timestamp": "2025-10-01T01:20:07.822147"
+  },
+  {
+    "article_data": {
+      "category": "Технические решения",
+      "topic": "Использование ISP прокси в маркетинге и аналитике",
+      "anchor": "",
+      "url": ""
+    },
+    "status": "error",
+    "error": "Не удалось опубликовать статью",
+    "processing_time": 57.974943,
+    "scheduled_date": "2025-10-14T02:15:20.842039",
+    "timestamp": "2025-10-01T01:21:07.800585"
+  }
+]
