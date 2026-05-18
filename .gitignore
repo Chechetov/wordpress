@@ -4,3 +4,5 @@
 logs/
 __pycache__/
 *.pyc
+sites.json
+campaign2_sites.json
