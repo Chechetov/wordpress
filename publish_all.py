@@ -1,0 +1,354 @@
+#!/usr/bin/env python3
+"""
+Мультисайтовая публикация статей с отложенным расписанием.
+
+Использование:
+    python publish_all.py                   # Публикация на все сайты
+    python publish_all.py --site 1          # Только сайт #1
+    python publish_all.py --site 1,2,3      # Несколько сайтов
+    python publish_all.py --dry-run         # Без публикации, только показать план
+    python publish_all.py --schedule-only   # Показать расписание без генерации
+"""
+
+import os
+import sys
+import json
+import csv
+import logging
+import time
+import base64
+import requests
+import argparse
+import random
+from datetime import datetime, timedelta
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Logging
+log_dir = Path("logs")
+log_dir.mkdir(exist_ok=True)
+log_file = log_dir / f"publish_all_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_file, encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# Импорт модулей
+from src.content_generator import ContentGenerator
+from src.image_generator import ImageGenerator
+from schedule_builder import build_schedule, pick_status
+
+
+def load_sites(path="sites.json"):
+    """Загрузка конфигурации сайтов"""
+    with open(path, 'r', encoding='utf-8') as f:
+        sites = json.load(f)
+    return [s for s in sites if not s.get('disabled')]
+
+
+def load_content_plan(path="content_plan.csv"):
+    """Загрузка контент-плана"""
+    plan = {}
+    with open(path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f, delimiter=';')
+        for row in reader:
+            site_id = int(row['Сайт'])
+            if site_id not in plan:
+                plan[site_id] = {
+                    'category': row['Рубрика'],
+                    'articles': []
+                }
+            plan[site_id]['articles'].append({
+                'topic': row['Тема статьи'],
+                'anchor': row.get('Анкор', ''),
+                'url': row.get('Ссылка', ''),
+                'type': row.get('Тип', '')
+            })
+    return plan
+
+
+# build_schedule и pick_status импортируются из schedule_builder
+
+
+def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry_run=False):
+    """Публикация статей на один сайт"""
+    domain = site_config['domain']
+    url = site_config['url']
+    username = site_config['username']
+    password = site_config['password']
+
+    # Прокси
+    proxies = {}
+    if os.getenv('PROXY_HTTP'):
+        proxies['http'] = os.getenv('PROXY_HTTP')
+    if os.getenv('PROXY_HTTPS'):
+        proxies['https'] = os.getenv('PROXY_HTTPS')
+
+    # Auth headers
+    cred = f"{username}:{password}"
+    encoded = base64.b64encode(cred.encode()).decode()
+    headers = {
+        'Authorization': f'Basic {encoded}',
+        'Content-Type': 'application/json'
+    }
+
+    api_base = f"{url}/wp-json/wp/v2"
+    results = []
+
+    # Определяем, нужен ли прокси для этого сайта
+    use_proxy = proxies
+    try:
+        r = requests.get(f"{api_base}/posts", headers=headers, proxies=proxies, timeout=10)
+        if r.status_code != 200:
+            r = requests.get(f"{api_base}/posts", headers=headers, timeout=10)
+            if r.status_code == 200:
+                use_proxy = None
+    except:
+        try:
+            requests.get(f"{api_base}/posts", headers=headers, timeout=10)
+            use_proxy = None
+        except:
+            pass
+
+    category = articles['category']
+    category_id = None
+
+    for i, (article_data, pub_time) in enumerate(zip(articles['articles'], schedule)):
+        article_num = i + 1
+        topic = article_data['topic']
+        anchor = article_data.get('anchor', '')
+        link_url = article_data.get('url', '')
+
+        logger.info(f"[{domain}] Статья {article_num}/6: {topic}")
+        logger.info(f"[{domain}] Запланирована на: {pub_time.strftime('%Y-%m-%d %H:%M')}")
+
+        if dry_run:
+            results.append({
+                'domain': domain, 'article': article_num, 'topic': topic,
+                'scheduled': pub_time.strftime('%Y-%m-%d %H:%M'), 'status': 'dry-run'
+            })
+            continue
+
+        try:
+            # 1. Генерация контента
+            logger.info(f"[{domain}] Генерация текста...")
+            content = content_gen.generate_article_content(
+                topic=topic,
+                anchor=anchor if anchor else '',
+                url=link_url if link_url else '',
+                target_words=1750
+            )
+
+            # 2. Генерация изображения
+            logger.info(f"[{domain}] Генерация изображения...")
+            img = image_gen.generate_featured_image(topic=topic, article_title=content['title'])
+
+            # 3. Получение/создание категории (один раз)
+            if category_id is None:
+                # Поиск существующей
+                try:
+                    r = requests.get(f"{api_base}/categories", headers=headers,
+                                     params={'search': category}, proxies=use_proxy, timeout=10)
+                    if r.status_code == 200:
+                        for cat in r.json():
+                            if cat['name'].lower() == category.lower():
+                                category_id = cat['id']
+                                break
+                except:
+                    pass
+
+                # Создание новой
+                if category_id is None:
+                    try:
+                        r = requests.post(f"{api_base}/categories", headers=headers,
+                                          json={'name': category}, proxies=use_proxy, timeout=10)
+                        if r.status_code == 201:
+                            category_id = r.json()['id']
+                        else:
+                            category_id = 1  # Без рубрики
+                    except:
+                        category_id = 1
+
+                logger.info(f"[{domain}] Категория '{category}' ID: {category_id}")
+
+            # 4. Загрузка изображения
+            media_id = None
+            if img and img.get('data'):
+                img_headers = headers.copy()
+                img_headers['Content-Type'] = 'image/webp'
+                img_headers['Content-Disposition'] = f'attachment; filename="article_{article_num}.webp"'
+                try:
+                    r = requests.post(f"{api_base}/media", headers=img_headers,
+                                      data=img['data'], proxies=use_proxy, timeout=30)
+                    if r.status_code == 201:
+                        media_id = r.json()['id']
+                        logger.info(f"[{domain}] Изображение загружено: ID {media_id}")
+                except Exception as e:
+                    logger.warning(f"[{domain}] Ошибка загрузки изображения: {e}")
+
+            # 5. Публикация с отложенной датой
+            post_data = {
+                'title': content['title'],
+                'content': content['content'],
+                'status': pick_status(pub_time),
+                'date': pub_time.isoformat(),
+                'categories': [category_id],
+                'featured_media': media_id if media_id else 0
+            }
+
+            r = requests.post(f"{api_base}/posts", headers=headers,
+                              json=post_data, proxies=use_proxy, timeout=30)
+
+            if r.status_code == 201:
+                post = r.json()
+                logger.info(f"[{domain}] ✓ Статья запланирована: ID={post['id']}, "
+                            f"дата={pub_time.strftime('%Y-%m-%d %H:%M')}")
+                results.append({
+                    'domain': domain, 'article': article_num, 'topic': topic,
+                    'post_id': post['id'], 'scheduled': pub_time.strftime('%Y-%m-%d %H:%M'),
+                    'status': 'success', 'title': content['title']
+                })
+            else:
+                logger.error(f"[{domain}] ✗ Ошибка публикации: {r.status_code} - {r.text[:200]}")
+                results.append({
+                    'domain': domain, 'article': article_num, 'topic': topic,
+                    'scheduled': pub_time.strftime('%Y-%m-%d %H:%M'),
+                    'status': 'error', 'error': r.text[:200]
+                })
+
+            # Пауза между статьями (не нагружать API)
+            time.sleep(3)
+
+        except Exception as e:
+            logger.error(f"[{domain}] ✗ Исключение: {str(e)}")
+            results.append({
+                'domain': domain, 'article': article_num, 'topic': topic,
+                'scheduled': pub_time.strftime('%Y-%m-%d %H:%M'),
+                'status': 'error', 'error': str(e)
+            })
+
+    return results
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Мультисайтовая публикация статей')
+    parser.add_argument('--sites-file', default='sites.json', help='JSON-файл с сайтами')
+    parser.add_argument('--site', type=str, help='ID сайтов через запятую (1,2,3)')
+    parser.add_argument('--dry-run', action='store_true', help='Только показать план')
+    parser.add_argument('--schedule-only', action='store_true', help='Показать расписание')
+    args = parser.parse_args()
+
+    logger.info("=" * 60)
+    logger.info("Мультисайтовая публикация статей")
+    logger.info("=" * 60)
+
+    # Загрузка данных
+    sites = load_sites(args.sites_file)
+    plan = load_content_plan()
+
+    # Фильтр по сайтам
+    if args.site:
+        site_ids = [int(x) for x in args.site.split(',')]
+        sites = [s for s in sites if s['id'] in site_ids]
+
+    logger.info(f"Сайтов: {len(sites)}")
+    logger.info(f"Рубрик в плане: {len(plan)}")
+
+    # Генерация расписания
+    schedules = build_schedule(len(sites))
+
+    # Показать расписание
+    if args.schedule_only or args.dry_run:
+        print("\n📅 РАСПИСАНИЕ ПУБЛИКАЦИЙ\n")
+        for idx, site in enumerate(sites):
+            site_id = site['id']
+            if site_id not in plan:
+                continue
+            site_plan = plan[site_id]
+            site_schedule = schedules[idx]
+            print(f"{'='*60}")
+            print(f"Сайт #{site_id}: {site['domain']} | Рубрика: {site_plan['category']}")
+            print(f"{'='*60}")
+            for j, (article, pub_time) in enumerate(zip(site_plan['articles'], site_schedule)):
+                type_mark = ''
+                if article.get('type') == 'анкор клиента':
+                    type_mark = ' [АНКОР]'
+                elif article.get('type') == 'траст':
+                    type_mark = ' [траст]'
+                mark = 'задним числом' if pick_status(pub_time) == 'publish' else 'отложенная'
+                print(f"  {j+1}. {pub_time.strftime('%d.%m.%Y %H:%M')} [{mark}] — {article['topic']}{type_mark}")
+            print()
+
+        if args.schedule_only:
+            return
+
+    if args.dry_run:
+        print("\n[DRY RUN] Публикация не выполнялась.\n")
+        return
+
+    # Инициализация генераторов
+    content_gen = ContentGenerator(
+        api_key=os.getenv('OPENAI_API_KEY'),
+        model=os.getenv('OPENAI_MODEL', 'gpt-5.4')
+    )
+    image_gen = ImageGenerator(
+        api_key=os.getenv('GOOGLE_API_KEY'),
+        model=os.getenv('IMAGEN_MODEL', 'gemini-3.1-flash-image-preview')
+    )
+
+    # Публикация
+    all_results = []
+    for idx, site in enumerate(sites):
+        site_id = site['id']
+        if site_id not in plan:
+            logger.warning(f"Нет плана для сайта #{site_id} ({site['domain']})")
+            continue
+
+        logger.info(f"\n{'='*60}")
+        logger.info(f"Сайт #{site_id}: {site['domain']}")
+        logger.info(f"{'='*60}")
+
+        results = publish_to_site(
+            site_config=site,
+            articles=plan[site_id],
+            schedule=schedules[idx],
+            content_gen=content_gen,
+            image_gen=image_gen,
+            dry_run=args.dry_run
+        )
+        all_results.extend(results)
+
+        # Пауза между сайтами
+        if idx < len(sites) - 1:
+            logger.info("Пауза 5 сек перед следующим сайтом...")
+            time.sleep(5)
+
+    # Сохранение отчёта
+    report_dir = Path("reports")
+    report_dir.mkdir(exist_ok=True)
+    report_file = report_dir / f"publish_all_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    with open(report_file, 'w', encoding='utf-8') as f:
+        json.dump(all_results, f, ensure_ascii=False, indent=2)
+
+    # Итоги
+    success = sum(1 for r in all_results if r['status'] == 'success')
+    errors = sum(1 for r in all_results if r['status'] == 'error')
+    total = len(all_results)
+
+    print(f"\n{'='*60}")
+    print(f"ИТОГО: {success}/{total} статей запланировано, {errors} ошибок")
+    print(f"Отчёт: {report_file}")
+    print(f"Лог: {log_file}")
+    print(f"{'='*60}")
+
+
+if __name__ == "__main__":
+    main()
