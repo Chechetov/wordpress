@@ -98,6 +98,7 @@ def main():
     if not reports:
         logger.error('Нет отчётов publish_all_*.json')
         sys.exit(1)
+    reports += glob.glob('reports/republish_*.json')
     report_path = max(reports, key=os.path.getmtime)
     report = json.load(open(report_path, encoding='utf-8'))
     errors = [r for r in report if r['status'] == 'error']
@@ -201,12 +202,14 @@ def main():
                                 'status': 'success', 'has_image': bool(media_id)})
             else:
                 logger.error(f"[{domain}] ✗ {r.status_code}: {r.text[:200]}")
-                results.append({'domain': domain, 'topic': topic, 'status': 'error',
-                                'error': f"{r.status_code}: {r.text[:200]}"})
+                results.append({'domain': domain, 'topic': topic,
+                                'scheduled': pub_time.strftime('%Y-%m-%d %H:%M'),
+                                'status': 'error', 'error': f"{r.status_code}: {r.text[:200]}"})
             time.sleep(3)
         except Exception as e:
             logger.error(f"[{domain}] ✗ исключение: {e}")
             results.append({'domain': domain, 'topic': topic,
+                            'scheduled': pub_time.strftime('%Y-%m-%d %H:%M'),
                             'status': 'error', 'error': str(e)})
 
     out = Path('reports') / f"republish_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
