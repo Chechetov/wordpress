@@ -211,18 +211,18 @@ def build_schedule(num_sites, articles_per_site=6):
     """Расписание для num_sites сайтов.
 
     Возвращает {site_index: [datetime, ...]} — по articles_per_site дат.
-    Старт сайта смещён на 28-52 ч относительно старта предыдущего;
-    внутри сайта статьи разнесены на 28-52 ч.
+    Старт сайта смещён на 1-2 дня относительно старта предыдущего;
+    внутри сайта статьи разнесены на 1-2 календарных дня.
     """
     schedules = {}
     site_start = REF_DATE
     for i in range(num_sites):
-        site_start = site_start + timedelta(hours=random.randint(28, 52))
+        site_start = site_start + timedelta(days=random.randint(1, 2))
         cursor = site_start
         site_schedule = []
         for _ in range(articles_per_site):
             site_schedule.append(_normalize_time(cursor))
-            cursor = cursor + timedelta(hours=random.randint(28, 52))
+            cursor = cursor + timedelta(days=random.randint(1, 2))
         schedules[i] = site_schedule
     return schedules
 
