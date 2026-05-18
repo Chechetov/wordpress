@@ -4,7 +4,7 @@
 
 **Goal:** Опубликовать на 29 новых сайтах по 6 статей (174 статьи) с расписанием, продолжающим таймлайн прошлой кампании, и бэкдейтингом прошедших дат.
 
-**Architecture:** Логика расписания выносится в отдельный модуль `schedule_builder.py` (чистые функции, тестируются изолированно). `publish_all.py` дорабатывается: импортирует расписание, принимает `--sites-file`, выбирает статус `publish`/`future` по дате. Данные кампании — `campaign2_sites.json` (29 сайтов) и новый `content_plan.csv` (174 строки).
+**Architecture:** Логика расписания выносится в отдельный модуль `schedule_builder.py` (чистые функции, тестируются изолированно). `publish_all.py` дорабатывается: импортирует расписание, принимает `--sites-file`, выбирает статус `publish`/`future` по дате, прогоняет сайты параллельно через пул потоков (`--workers`). Данные кампании — `campaign2_sites.json` (29 сайтов) и новый `content_plan.csv` (174 строки).
 
 **Tech Stack:** Python 3, `requests`, `python-dotenv`, OpenAI API (текст), Google Imagen (обложки), WordPress REST API.
 
@@ -18,7 +18,7 @@
 - **Create** `test_schedule.py` — тесты `schedule_builder`, запуск `python test_schedule.py`.
 - **Create** `campaign2_sites.json` — конфиг 29 новых сайтов (НЕ коммитится — содержит пароли).
 - **Create** `content_plan.csv` — 174 строки контент-плана (старый переименовывается в `content_plan_campaign1.csv`).
-- **Modify** `publish_all.py` — импорт `schedule_builder`, аргумент `--sites-file`, статус по дате, маркеры в dry-run.
+- **Modify** `publish_all.py` — импорт `schedule_builder`, аргумент `--sites-file`, статус по дате, маркеры в dry-run, параллельный прогон по сайтам (`--workers`).
 - **Modify** `.gitignore` — добавить `campaign2_sites.json` и `sites.json`.
 
 ---
@@ -461,7 +461,110 @@ git commit -m "feat: publish_all поддерживает --sites-file и бэк
 
 ---
 
-## Task 5: Предпросмотр расписания и согласование (ГЕЙТ)
+## Task 5: Параллельный прогон по сайтам
+
+**Files:**
+- Modify: `publish_all.py`
+
+Последовательный прогон 174 статей — несколько часов. Распараллеливаем по сайтам: пул потоков обрабатывает несколько сайтов одновременно, в каждом потоке идёт своя генерация текста и обложек. Расписание считается один раз глобально (`build_schedule(len(sites))`) — порядок дат не меняется. SDK-клиенты OpenAI/Imagen потокобезопасны для конкурентных запросов; при ошибках rate limit достаточно снизить `--workers`.
+
+- [ ] **Step 1: Импорт и аргумент `--workers`**
+
+Добавить в блок импортов `publish_all.py` строку (после `from dotenv import load_dotenv`):
+
+```python
+from concurrent.futures import ThreadPoolExecutor, as_completed
+```
+
+В `main()` добавить аргумент перед `args = parser.parse_args()`:
+
+```python
+    parser.add_argument('--workers', type=int, default=5,
+                        help='Сколько сайтов обрабатывать параллельно')
+```
+
+- [ ] **Step 2: Заменить последовательный цикл публикации на пул потоков**
+
+Заменить блок:
+
+```python
+    # Публикация
+    all_results = []
+    for idx, site in enumerate(sites):
+        site_id = site['id']
+        if site_id not in plan:
+            logger.warning(f"Нет плана для сайта #{site_id} ({site['domain']})")
+            continue
+
+        logger.info(f"\n{'='*60}")
+        logger.info(f"Сайт #{site_id}: {site['domain']}")
+        logger.info(f"{'='*60}")
+
+        results = publish_to_site(
+            site_config=site,
+            articles=plan[site_id],
+            schedule=schedules[idx],
+            content_gen=content_gen,
+            image_gen=image_gen,
+            dry_run=args.dry_run
+        )
+        all_results.extend(results)
+
+        # Пауза между сайтами
+        if idx < len(sites) - 1:
+            logger.info("Пауза 5 сек перед следующим сайтом...")
+            time.sleep(5)
+```
+
+на:
+
+```python
+    # Публикация — параллельно по сайтам
+    jobs = []
+    for idx, site in enumerate(sites):
+        if site['id'] not in plan:
+            logger.warning(f"Нет плана для сайта #{site['id']} ({site['domain']})")
+            continue
+        jobs.append((idx, site))
+
+    logger.info(f"Параллельная публикация: {len(jobs)} сайтов, "
+                f"{args.workers} потоков")
+
+    all_results = []
+    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+        futures = {
+            executor.submit(publish_to_site, site, plan[site['id']],
+                            schedules[idx], content_gen, image_gen,
+                            args.dry_run): site['domain']
+            for idx, site in jobs
+        }
+        for future in as_completed(futures):
+            domain = futures[future]
+            try:
+                all_results.extend(future.result())
+                logger.info(f"[{domain}] сайт завершён")
+            except Exception as e:
+                logger.error(f"[{domain}] сбой обработки сайта: {e}")
+```
+
+- [ ] **Step 3: Проверка**
+
+Run: `python publish_all.py --help`
+Expected: в выводе присутствует `--workers`.
+
+Run: `python publish_all.py --sites-file campaign2_sites.json --dry-run`
+Expected: печатается расписание и `[DRY RUN] Публикация не выполнялась.`, без трейсбэков (пул потоков в dry-run не задействуется — `main()` выходит раньше).
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add publish_all.py
+git commit -m "feat: параллельная публикация по сайтам (--workers)"
+```
+
+---
+
+## Task 6: Предпросмотр расписания и согласование (ГЕЙТ)
 
 **Files:** нет (только проверка и согласование)
 
@@ -496,15 +599,15 @@ PY
 
 - [ ] **Step 3: СТОП — согласование с заказчиком**
 
-Показать заказчику: сводку расписания (Step 2), окно кампании, число бэкдейт/отложенных, и `content_plan.csv` (рубрики + темы). **Не переходить к Task 6 без явного «запускай».**
+Показать заказчику: сводку расписания (Step 2), окно кампании, число бэкдейт/отложенных, и `content_plan.csv` (рубрики + темы). **Не переходить к Task 7 без явного «запускай».**
 
 ---
 
-## Task 6: Реальный запуск публикации
+## Task 7: Реальный запуск публикации
 
 **Files:** нет (запуск + проверка)
 
-⚠️ Выполнять только после явного согласования в Task 5. Запуск создаёт 174 статьи через платные API (OpenAI, Imagen) и публикует на 29 живых сайтов; бэкдейт-статьи становятся видимыми сразу.
+⚠️ Выполнять только после явного согласования в Task 6. Запуск создаёт 174 статьи через платные API (OpenAI, Imagen) и публикует на 29 живых сайтов; бэкдейт-статьи становятся видимыми сразу.
 
 - [ ] **Step 1: Проверить ключи API**
 
@@ -516,7 +619,9 @@ Expected: обе переменные присутствуют и непусты
 
 - [ ] **Step 2: Запуск в фоне**
 
-Run (в фоне — прогон длительный): `python publish_all.py --sites-file campaign2_sites.json`
+Run (в фоне — прогон длительный): `python publish_all.py --sites-file campaign2_sites.json --workers 5`
+
+При ошибках rate limit от OpenAI/Imagen перезапустить с меньшим `--workers`; при стабильной работе можно поднять до 8–10 для ускорения.
 
 - [ ] **Step 3: Контроль выполнения**
 
@@ -547,6 +652,6 @@ Expected: `Успешно: 174 / 174   Ошибок: 0` (либо разобра
 
 ## Self-Review
 
-- **Покрытие спеки:** структура контента (Task 3), привязка анкоров (Task 3, таблица), расписание от таймлайна + бэкдейтинг (Task 2, 4), исключение дубля Москвы (Task 3, сайтов 19 вместо 20 московских), `--sites-file` (Task 4), dry-run с пометками (Task 4-5), запуск (Task 6) — покрыто.
+- **Покрытие спеки:** структура контента (Task 3), привязка анкоров (Task 3, таблица), расписание от таймлайна + бэкдейтинг (Task 2, 4), исключение дубля Москвы (Task 3, сайтов 19 вместо 20 московских), `--sites-file` (Task 4), dry-run с пометками (Task 4, 6), запуск (Task 7) — покрыто. Параллельный прогон (Task 5) — добавлен сверх спеки по запросу заказчика для ускорения, на дизайн расписания не влияет.
 - **Плейсхолдеры:** код приведён полностью; `content_plan.csv` авторски пишется по правилам + эталонный блок — для контентного файла это деливерабл задачи, не плейсхолдер.
 - **Согласованность типов:** `build_schedule(num_sites, articles_per_site=6)` и `pick_status(pub_time, now=None)` — сигнатуры совпадают в `schedule_builder.py`, `test_schedule.py`, `publish_all.py`.
