@@ -22,6 +22,7 @@ import argparse
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -244,6 +245,8 @@ def main():
     parser.add_argument('--site', type=str, help='ID сайтов через запятую (1,2,3)')
     parser.add_argument('--dry-run', action='store_true', help='Только показать план')
     parser.add_argument('--schedule-only', action='store_true', help='Показать расписание')
+    parser.add_argument('--workers', type=int, default=5,
+                        help='Сколько сайтов обрабатывать параллельно')
     args = parser.parse_args()
 
     logger.info("=" * 60)
@@ -304,32 +307,32 @@ def main():
         model=os.getenv('IMAGEN_MODEL', 'gemini-3.1-flash-image-preview')
     )
 
-    # Публикация
-    all_results = []
+    # Публикация — параллельно по сайтам
+    jobs = []
     for idx, site in enumerate(sites):
-        site_id = site['id']
-        if site_id not in plan:
-            logger.warning(f"Нет плана для сайта #{site_id} ({site['domain']})")
+        if site['id'] not in plan:
+            logger.warning(f"Нет плана для сайта #{site['id']} ({site['domain']})")
             continue
+        jobs.append((idx, site))
 
-        logger.info(f"\n{'='*60}")
-        logger.info(f"Сайт #{site_id}: {site['domain']}")
-        logger.info(f"{'='*60}")
+    logger.info(f"Параллельная публикация: {len(jobs)} сайтов, "
+                f"{args.workers} потоков")
 
-        results = publish_to_site(
-            site_config=site,
-            articles=plan[site_id],
-            schedule=schedules[idx],
-            content_gen=content_gen,
-            image_gen=image_gen,
-            dry_run=args.dry_run
-        )
-        all_results.extend(results)
-
-        # Пауза между сайтами
-        if idx < len(sites) - 1:
-            logger.info("Пауза 5 сек перед следующим сайтом...")
-            time.sleep(5)
+    all_results = []
+    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+        futures = {
+            executor.submit(publish_to_site, site, plan[site['id']],
+                            schedules[idx], content_gen, image_gen,
+                            args.dry_run): site['domain']
+            for idx, site in jobs
+        }
+        for future in as_completed(futures):
+            domain = futures[future]
+            try:
+                all_results.extend(future.result())
+                logger.info(f"[{domain}] сайт завершён")
+            except Exception as e:
+                logger.error(f"[{domain}] сбой обработки сайта: {e}")
 
     # Сохранение отчёта
     report_dir = Path("reports")
