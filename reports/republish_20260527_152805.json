@@ -1,0 +1,131 @@
+[
+  {
+    "domain": "rt-covid19.ru",
+    "topic": "Аренда фотозон в Екатеринбурге: основные форматы и решения 2026 года",
+    "post_id": 229,
+    "scheduled": "2026-05-27 11:09",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "rt-covid19.ru",
+    "topic": "Аренда фотозон в Екатеринбурге: технологии, материалы и оборудование",
+    "post_id": 231,
+    "scheduled": "2026-05-28 10:24",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "rt-covid19.ru",
+    "topic": "Как выбрать аренда фотозоны в Екатеринбурге: критерии, сервис и бюджет",
+    "post_id": 233,
+    "scheduled": "2026-05-30 13:37",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "rt-covid19.ru",
+    "topic": "Аренда фотозон в Екатеринбурге: примеры удачных кейсов и нестандартные идеи",
+    "post_id": 235,
+    "scheduled": "2026-06-01 18:22",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "rt-covid19.ru",
+    "topic": "Аренда фотозон в Екатеринбурге: безопасность, монтаж и нормативы",
+    "post_id": 237,
+    "scheduled": "2026-06-03 14:34",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "rt-covid19.ru",
+    "topic": "Аренда фотозон в Екатеринбурге: ошибки заказчиков и как их избежать",
+    "post_id": 239,
+    "scheduled": "2026-06-05 20:50",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "photo-test.ru",
+    "topic": "Корпоративные мероприятия и фото-оформление: основные форматы и решения 2026 года",
+    "post_id": 272,
+    "scheduled": "2026-05-28 11:45",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "arshta.org",
+    "topic": "Фотозоны для свадебных церемоний: примеры удачных кейсов и нестандартные идеи",
+    "post_id": 235,
+    "scheduled": "2026-06-01 18:52",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "arshta.org",
+    "topic": "Фотозоны для свадебных церемоний: безопасность, монтаж и нормативы",
+    "scheduled": "2026-06-03 16:54",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='arshta.org', port=443): Read timed out."
+  },
+  {
+    "domain": "arshta.org",
+    "topic": "Фотозоны для свадебных церемоний: ошибки заказчиков и как их избежать",
+    "post_id": 239,
+    "scheduled": "2026-06-05 20:52",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "lyadeputti.ru",
+    "topic": "Фотозоны в городской среде: безопасность, монтаж и нормативы",
+    "post_id": 155,
+    "scheduled": "2026-06-07 09:15",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "mai-hoshi.ru",
+    "topic": "LED-фотозоны: технические характеристики: основные форматы и решения 2026 года",
+    "scheduled": "2026-06-06 15:40",
+    "status": "error",
+    "error": "Connection error."
+  },
+  {
+    "domain": "mai-hoshi.ru",
+    "topic": "LED-фотозоны: технические характеристики: технологии, материалы и оборудование",
+    "scheduled": "2026-06-07 21:22",
+    "status": "error",
+    "error": "Connection error."
+  },
+  {
+    "domain": "mai-hoshi.ru",
+    "topic": "Как выбрать led фотозона аренда: критерии, сервис и бюджет",
+    "scheduled": "2026-06-09 14:07",
+    "status": "error",
+    "error": "Connection error."
+  },
+  {
+    "domain": "mai-hoshi.ru",
+    "topic": "LED-фотозоны: технические характеристики: примеры удачных кейсов и нестандартные идеи",
+    "scheduled": "2026-06-11 18:53",
+    "status": "error",
+    "error": "Connection error."
+  },
+  {
+    "domain": "mai-hoshi.ru",
+    "topic": "LED-фотозоны: технические характеристики: безопасность, монтаж и нормативы",
+    "scheduled": "2026-06-12 18:39",
+    "status": "error",
+    "error": "Connection error."
+  },
+  {
+    "domain": "mai-hoshi.ru",
+    "topic": "LED-фотозоны: технические характеристики: ошибки заказчиков и как их избежать",
+    "scheduled": "2026-06-13 18:24",
+    "status": "error",
+    "error": "Connection error."
+  }
+]

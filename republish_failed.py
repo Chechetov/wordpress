@@ -88,18 +88,29 @@ def resolve_category(api_base, headers, use_proxy, name):
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--sites-file', default='campaign2_sites.json')
+    ap.add_argument('--plan', default='content_plan.csv')
+    ap.add_argument('--report', default=None,
+                    help='Конкретный отчёт publish_all_*.json (по умолчанию — последний)')
+    args = ap.parse_args()
+
     proxies = {}
     if os.getenv('PROXY_HTTP'):
         proxies['http'] = os.getenv('PROXY_HTTP')
     if os.getenv('PROXY_HTTPS'):
         proxies['https'] = os.getenv('PROXY_HTTPS')
 
-    reports = glob.glob('reports/publish_all_*.json')
-    if not reports:
-        logger.error('Нет отчётов publish_all_*.json')
-        sys.exit(1)
-    reports += glob.glob('reports/republish_*.json')
-    report_path = max(reports, key=os.path.getmtime)
+    if args.report:
+        report_path = args.report
+    else:
+        reports = glob.glob('reports/publish_all_*.json')
+        if not reports:
+            logger.error('Нет отчётов publish_all_*.json')
+            sys.exit(1)
+        reports += glob.glob('reports/republish_*.json')
+        report_path = max(reports, key=os.path.getmtime)
     report = json.load(open(report_path, encoding='utf-8'))
     errors = [r for r in report if r['status'] == 'error']
     logger.info(f"Отчёт: {report_path}")
@@ -108,8 +119,8 @@ def main():
         logger.info('Ошибок нет — допубликация не требуется.')
         return
 
-    sites = {s['domain']: s for s in json.load(open('campaign2_sites.json', encoding='utf-8'))}
-    plan = load_plan()
+    sites = {s['domain']: s for s in json.load(open(args.sites_file, encoding='utf-8'))}
+    plan = load_plan(args.plan)
 
     content_gen = ContentGenerator(api_key=os.getenv('OPENAI_API_KEY'),
                                    model=os.getenv('OPENAI_MODEL', 'gpt-5.4'))

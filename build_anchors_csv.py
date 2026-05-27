@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CSV по 29 анкорным статьям кампании №2 — с постоянными ЧПУ-URL.
+"""CSV по клиентским анкорным статьям — с постоянными ЧПУ-URL.
 
 Для отложенных статей WordPress отдаёт временный адрес вида ?p=N.
 Здесь он заменяется на постоянный ЧПУ-адрес /<рубрика-slug>/<post-slug>/,
@@ -12,11 +12,21 @@ import json
 import csv
 import glob
 import base64
+import argparse
 import requests
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
+
+ap = argparse.ArgumentParser()
+ap.add_argument('--sites-file', default='campaign2_sites.json')
+ap.add_argument('--plan', default='content_plan.csv')
+ap.add_argument('--reports', nargs='+', default=None,
+                help='Отчёты publish_all_*.json / republish_*.json. '
+                     'По умолчанию — все из reports/.')
+ap.add_argument('--out', default='reports/campaign2_anchors.csv')
+args = ap.parse_args()
 
 proxies = {}
 if os.getenv('PROXY_HTTP'):
@@ -24,25 +34,28 @@ if os.getenv('PROXY_HTTP'):
 if os.getenv('PROXY_HTTPS'):
     proxies['https'] = os.getenv('PROXY_HTTPS')
 
-sites = {s['domain']: s for s in json.load(open('campaign2_sites.json', encoding='utf-8'))}
+sites = {s['domain']: s for s in json.load(open(args.sites_file, encoding='utf-8'))}
 site_by_id = {s['id']: s for s in sites.values()}
 
 # анкорные статьи из контент-плана
 anchors = []
-for row in csv.DictReader(open('content_plan.csv', encoding='utf-8'), delimiter=';'):
+for row in csv.DictReader(open(args.plan, encoding='utf-8'), delimiter=';'):
     if row['Тип'] == 'анкор клиента':
         anchors.append((int(row['Сайт']), row['Тема статьи'],
                         row['Анкор'], row['Ссылка']))
 anchors.sort()
 
-# post_id по (домен, тема) из отчётов кампании №2
+# post_id по (домен, тема) из указанных отчётов
 post_id_by = {}
-for pat in ('reports/publish_all_*.json', 'reports/republish_*.json'):
-    for path in glob.glob(pat):
-        for r in json.load(open(path, encoding='utf-8')):
-            if (r.get('status') == 'success' and r.get('post_id')
-                    and r.get('domain') in sites):
-                post_id_by[(r['domain'], r['topic'])] = r['post_id']
+report_paths = args.reports
+if not report_paths:
+    report_paths = (glob.glob('reports/publish_all_*.json')
+                    + glob.glob('reports/republish_*.json'))
+for path in report_paths:
+    for r in json.load(open(path, encoding='utf-8')):
+        if (r.get('status') == 'success' and r.get('post_id')
+                and r.get('domain') in sites):
+            post_id_by[(r['domain'], r['topic'])] = r['post_id']
 
 
 def auth(site):
@@ -152,12 +165,13 @@ for i, (sid, topic, anchor, target) in enumerate(anchors, 1):
         print(f"  ~ {domain}: нет опубликованных статей для проверки структуры — адрес собран по стандарту")
     rows.append([i, domain, date, pretty, anchor, target])
 
-with open('reports/campaign2_anchors.csv', 'w', encoding='utf-8-sig', newline='') as f:
+os.makedirs(os.path.dirname(args.out) or '.', exist_ok=True)
+with open(args.out, 'w', encoding='utf-8-sig', newline='') as f:
     w = csv.writer(f)
     w.writerow(['№', 'Сайт', 'Дата публикации', 'URL статьи', 'Анкор', 'Целевая ссылка'])
     w.writerows(rows)
 
-print(f"\nЗаписано: reports/campaign2_anchors.csv — {len(rows)} строк")
+print(f"\nЗаписано: {args.out} — {len(rows)} строк")
 print(f"  URL подтверждён/проверен: {verified}")
 print(f"  URL собран по стандартной структуре (без проверки): {assumed}")
 print(f"  проблемных: {problems}")

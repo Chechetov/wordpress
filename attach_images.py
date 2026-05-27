@@ -58,6 +58,9 @@ def main():
     parser = argparse.ArgumentParser(description='Прикрепление обложек к постам')
     parser.add_argument('--workers', type=int, default=5,
                         help='Сколько постов обрабатывать параллельно')
+    parser.add_argument('--sites-file', default='campaign2_sites.json')
+    parser.add_argument('--reports', nargs='+', default=None,
+                        help='Один или несколько отчётов; по умолчанию — последний publish_all_*.json')
     args = parser.parse_args()
 
     proxies = {}
@@ -66,20 +69,33 @@ def main():
     if os.getenv('PROXY_HTTPS'):
         proxies['https'] = os.getenv('PROXY_HTTPS')
 
-    reports = glob.glob('reports/publish_all_*.json')
-    if not reports:
-        logger.error('Нет отчётов publish_all_*.json')
-        sys.exit(1)
-    report_path = max(reports, key=os.path.getmtime)
-    report = json.load(open(report_path, encoding='utf-8'))
-    posts = [r for r in report if r['status'] == 'success' and r.get('post_id')]
-    logger.info(f"Отчёт: {report_path}")
+    if args.reports:
+        report_paths = args.reports
+    else:
+        reports = glob.glob('reports/publish_all_*.json')
+        if not reports:
+            logger.error('Нет отчётов publish_all_*.json')
+            sys.exit(1)
+        report_paths = [max(reports, key=os.path.getmtime)]
+
+    posts = []
+    seen = set()
+    for rp in report_paths:
+        data = json.load(open(rp, encoding='utf-8'))
+        for r in data:
+            if r['status'] == 'success' and r.get('post_id'):
+                key = (r['domain'], r['post_id'])
+                if key in seen:
+                    continue
+                seen.add(key)
+                posts.append(r)
+        logger.info(f"Отчёт: {rp}")
     logger.info(f"Постов к обработке: {len(posts)}")
     if not posts:
         logger.info('Нет опубликованных постов.')
         return
 
-    sites = {s['domain']: s for s in json.load(open('campaign2_sites.json', encoding='utf-8'))}
+    sites = {s['domain']: s for s in json.load(open(args.sites_file, encoding='utf-8'))}
     image_gen = FalImageGenerator(api_key=os.getenv('FAL_KEY'))
 
     def auth_headers(site):

@@ -45,6 +45,7 @@ logger = logging.getLogger(__name__)
 # Импорт модулей
 from src.content_generator import ContentGenerator
 from src.image_generator import ImageGenerator
+from src.fal_image_generator import FalImageGenerator
 from schedule_builder import build_schedule, pick_status
 
 
@@ -55,7 +56,7 @@ def load_sites(path="sites.json"):
     return [s for s in sites if not s.get('disabled')]
 
 
-def load_content_plan(path="content_plan.csv"):
+def load_content_plan(path: str = "content_plan.csv"):
     """Загрузка контент-плана"""
     plan = {}
     with open(path, 'r', encoding='utf-8') as f:
@@ -183,9 +184,11 @@ def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry
             # 4. Загрузка изображения
             media_id = None
             if img and img.get('data'):
+                ctype = img.get('content_type', 'image/webp')
+                ext = img.get('ext', 'webp')
                 img_headers = headers.copy()
-                img_headers['Content-Type'] = 'image/webp'
-                img_headers['Content-Disposition'] = f'attachment; filename="article_{article_num}.webp"'
+                img_headers['Content-Type'] = ctype
+                img_headers['Content-Disposition'] = f'attachment; filename="article_{article_num}.{ext}"'
                 try:
                     r = requests.post(f"{api_base}/media", headers=img_headers,
                                       data=img['data'], proxies=use_proxy, timeout=30)
@@ -242,11 +245,21 @@ def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry
 def main():
     parser = argparse.ArgumentParser(description='Мультисайтовая публикация статей')
     parser.add_argument('--sites-file', default='sites.json', help='JSON-файл с сайтами')
+    parser.add_argument('--plan', default='content_plan.csv',
+                        help='CSV контент-плана (по умолчанию content_plan.csv)')
     parser.add_argument('--site', type=str, help='ID сайтов через запятую (1,2,3)')
     parser.add_argument('--dry-run', action='store_true', help='Только показать план')
     parser.add_argument('--schedule-only', action='store_true', help='Показать расписание')
     parser.add_argument('--workers', type=int, default=5,
                         help='Сколько сайтов обрабатывать параллельно')
+    parser.add_argument('--start-date', type=str, default=None,
+                        help='Точка отсчёта YYYY-MM-DD (по умолчанию REF_DATE)')
+    parser.add_argument('--site-step', type=str, default=None,
+                        help='Диапазон сдвига между сайтами, например 0-1')
+    parser.add_argument('--article-step', type=str, default=None,
+                        help='Диапазон между статьями внутри сайта, например 2-3')
+    parser.add_argument('--image-backend', choices=['google', 'fal'], default='fal',
+                        help='Бэкенд генерации обложек (google устарел, по умолчанию fal)')
     args = parser.parse_args()
 
     logger.info("=" * 60)
@@ -255,7 +268,7 @@ def main():
 
     # Загрузка данных
     sites = load_sites(args.sites_file)
-    plan = load_content_plan()
+    plan = load_content_plan(args.plan)
 
     # Фильтр по сайтам
     if args.site:
@@ -265,8 +278,19 @@ def main():
     logger.info(f"Сайтов: {len(sites)}")
     logger.info(f"Рубрик в плане: {len(plan)}")
 
+    # Параметры расписания
+    sched_kwargs = {}
+    if args.start_date:
+        sched_kwargs['start_date'] = datetime.strptime(args.start_date, '%Y-%m-%d')
+    if args.site_step:
+        lo, hi = args.site_step.split('-')
+        sched_kwargs['site_step'] = (int(lo), int(hi))
+    if args.article_step:
+        lo, hi = args.article_step.split('-')
+        sched_kwargs['article_step'] = (int(lo), int(hi))
+
     # Генерация расписания
-    schedules = build_schedule(len(sites))
+    schedules = build_schedule(len(sites), **sched_kwargs)
 
     # Показать расписание
     if args.schedule_only or args.dry_run:
@@ -302,10 +326,16 @@ def main():
         api_key=os.getenv('OPENAI_API_KEY'),
         model=os.getenv('OPENAI_MODEL', 'gpt-5.4')
     )
-    image_gen = ImageGenerator(
-        api_key=os.getenv('GOOGLE_API_KEY'),
-        model=os.getenv('IMAGEN_MODEL', 'gemini-3.1-flash-image-preview')
-    )
+    if args.image_backend == 'fal':
+        image_gen = FalImageGenerator(
+            api_key=os.getenv('FAL_KEY'),
+            model=os.getenv('FAL_IMAGE_MODEL', 'fal-ai/nano-banana'),
+        )
+    else:
+        image_gen = ImageGenerator(
+            api_key=os.getenv('GOOGLE_API_KEY'),
+            model=os.getenv('IMAGEN_MODEL', 'gemini-3.1-flash-image-preview'),
+        )
 
     # Публикация — параллельно по сайтам
     jobs = []
