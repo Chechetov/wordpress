@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 class ContentGenerator:
     """Класс для генерации контента статей через OpenAI API"""
     
-    def __init__(self, api_key: str, model: str = "gpt-4"):
+    def __init__(self, api_key: str, model: str = "gpt-5.4"):
         """
         Инициализация генератора контента
-        
+
         Args:
             api_key: OpenAI API ключ
-            model: Модель для генерации (gpt-3.5-turbo, gpt-4)
+            model: Модель для генерации
         """
         self.client = openai.OpenAI(api_key=api_key)
         self.model = model
@@ -64,7 +64,7 @@ class ContentGenerator:
                     }
                 ],
                 temperature=0.7,
-                max_tokens=3500  # Примерно 2500-3000 слов
+                max_completion_tokens=3500
             )
             
             content = response.choices[0].message.content
@@ -214,7 +214,7 @@ class ContentGenerator:
                     }
                 ],
                 temperature=0.7,
-                max_tokens=50
+                max_completion_tokens=50
             )
             
             title = response.choices[0].message.content.strip()
