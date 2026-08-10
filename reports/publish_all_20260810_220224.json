@@ -1,0 +1,10 @@
+[
+  {
+    "domain": "m-e-d-a-l.ru",
+    "article": 1,
+    "topic": "Фотобудки для корпоративов в Екатеринбурге: что изменилось в 2026 году",
+    "scheduled": "2026-08-12 21:55",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='m-e-d-a-l.ru', port=443): Read timed out."
+  }
+]
