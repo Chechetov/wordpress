@@ -51,8 +51,9 @@ WORDPRESS_APP_PASSWORD=xxxxxxxxxxxxxxxxxxxx
 OPENAI_API_KEY=your_openai_api_key
 
 # Опциональные параметры
-OPENAI_MODEL=gpt-4
-DALLE_MODEL=dall-e-3
+OPENAI_MODEL=gpt-5.4
+OPENAI_IMAGE_MODEL=gpt-image-2   # обложки; low ≈ $0.005 за картинку 1536x1024
+IMAGE_QUALITY=low                # low | medium | high
 TARGET_WORD_COUNT=1750
 DELAY_BETWEEN_POSTS=60
 PUBLISH_STATUS=publish

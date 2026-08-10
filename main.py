@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 from src.data_reader import ArticleDataReader
 from src.content_generator import ContentGenerator
-from src.image_generator import ImageGenerator
+from src.openai_image_generator import OpenAIImageGenerator
 from src.wordpress_publisher import WordPressPublisher
 
 # Загружаем переменные окружения
@@ -58,9 +58,10 @@ class WordPressAutomation:
                 model=self.config.get('openai_model', 'gpt-4')
             )
             
-            self.image_generator = ImageGenerator(
+            self.image_generator = OpenAIImageGenerator(
                 api_key=self.config['openai_api_key'],
-                model=self.config.get('dalle_model', 'dall-e-3')
+                model=self.config.get('openai_image_model', 'gpt-image-2'),
+                quality=self.config.get('image_quality', 'low')
             )
             
             self.wordpress_publisher = WordPressPublisher(
@@ -93,7 +94,7 @@ class WordPressAutomation:
                 missing_vars.append(var)
             else:
                 # Конвертируем имя переменной в ключ конфигурации
-                config_key = var.lower().replace('wordpress_', 'wordpress_').replace('openai_', 'openai_')
+                config_key = var.lower()
                 config[config_key] = value
         
         if missing_vars:
@@ -101,8 +102,9 @@ class WordPressAutomation:
         
         # Опциональные параметры
         config.update({
-            'openai_model': os.getenv('OPENAI_MODEL', 'gpt-4'),
-            'dalle_model': os.getenv('DALLE_MODEL', 'dall-e-3'),
+            'openai_model': os.getenv('OPENAI_MODEL', 'gpt-5.4'),
+            'openai_image_model': os.getenv('OPENAI_IMAGE_MODEL', 'gpt-image-2'),
+            'image_quality': os.getenv('IMAGE_QUALITY', 'low'),
             'target_word_count': int(os.getenv('TARGET_WORD_COUNT', '1750')),
             'delay_between_posts': int(os.getenv('DELAY_BETWEEN_POSTS', '60')),
             'publish_status': os.getenv('PUBLISH_STATUS', 'publish'),  # или 'draft'
@@ -302,7 +304,7 @@ class WordPressAutomation:
                 
                 if image_result:
                     image_data = image_result['data']
-                    image_filename = f"article_{article_number}_{int(time.time())}.png"
+                    image_filename = f"article_{article_number}_{int(time.time())}.{image_result.get('ext', 'jpg')}"
                     
                     # Сохраняем локально если включено
                     if self.config['save_locally']:
@@ -434,7 +436,8 @@ def main():
             print(f"  WordPress URL: {automation.config['wordpress_url']}")
             print(f"  WordPress Username: {automation.config['wordpress_username']}")
             print(f"  OpenAI Model: {automation.config['openai_model']}")
-            print(f"  DALL-E Model: {automation.config['dalle_model']}")
+            print(f"  Image Model: {automation.config['openai_image_model']} "
+                  f"({automation.config['image_quality']})")
             print(f"  Target Word Count: {automation.config['target_word_count']}")
             print(f"  Publish Status: {automation.config['publish_status']}")
             print(f"  Generate Images: {automation.config['generate_images']}")

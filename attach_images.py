@@ -26,7 +26,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from src.fal_image_generator import FalImageGenerator
+from src.openai_image_generator import OpenAIImageGenerator
+
 
 log_dir = Path('logs')
 log_dir.mkdir(exist_ok=True)
@@ -96,7 +97,11 @@ def main():
         return
 
     sites = {s['domain']: s for s in json.load(open(args.sites_file, encoding='utf-8'))}
-    image_gen = FalImageGenerator(api_key=os.getenv('FAL_KEY'))
+    image_gen = OpenAIImageGenerator(
+        api_key=os.getenv('OPENAI_API_KEY'),
+        model=os.getenv('OPENAI_IMAGE_MODEL', 'gpt-image-2'),
+        quality=os.getenv('IMAGE_QUALITY', 'low'),
+    )
 
     def auth_headers(site):
         cred = f"{site['username']}:{site['password']}"
