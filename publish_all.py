@@ -17,6 +17,7 @@ import csv
 import logging
 import time
 import base64
+import html
 import requests
 import argparse
 import random
@@ -46,6 +47,7 @@ logger = logging.getLogger(__name__)
 from src.content_generator import ContentGenerator
 from src.image_generator import ImageGenerator
 from src.fal_image_generator import FalImageGenerator
+from src.openai_image_generator import OpenAIImageGenerator
 from schedule_builder import build_schedule, pick_status
 
 
@@ -80,6 +82,30 @@ def load_content_plan(path: str = "content_plan.csv"):
 # build_schedule и pick_status импортируются из schedule_builder
 
 
+def find_post_by_title(api_base, headers, use_proxy, title, attempts=3):
+    """ID поста с точно таким заголовком либо None.
+
+    Нужна после обрыва соединения на POST: пост мог создаться, а ответ — нет.
+    """
+    for attempt in range(attempts):
+        try:
+            r = requests.get(f"{api_base}/posts", headers=headers, proxies=use_proxy,
+                             params={'search': title[:60], 'per_page': 20,
+                                     'status': 'publish,future,draft',
+                                     '_fields': 'id,title'},
+                             timeout=60)
+            if r.status_code == 200:
+                for post in r.json():
+                    rendered = html.unescape(post.get('title', {}).get('rendered', '')).strip()
+                    if rendered == title.strip():
+                        return post['id']
+                return None
+        except Exception:
+            pass
+        time.sleep(5 * (attempt + 1))
+    return None
+
+
 def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry_run=False):
     """Публикация статей на один сайт"""
     domain = site_config['domain']
@@ -105,20 +131,23 @@ def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry
     api_base = f"{url}/wp-json/wp/v2"
     results = []
 
-    # Определяем, нужен ли прокси для этого сайта
-    use_proxy = proxies
-    try:
-        r = requests.get(f"{api_base}/posts", headers=headers, proxies=proxies, timeout=10)
-        if r.status_code != 200:
-            r = requests.get(f"{api_base}/posts", headers=headers, timeout=10)
-            if r.status_code == 200:
-                use_proxy = None
-    except:
+    # Определяем, нужен ли прокси для этого сайта.
+    # Прокси — вариант по умолчанию: часть доноров за Cloudflare и прямые
+    # запросы к ним получают «Just a moment...» (403). Уходим на прямое
+    # соединение ТОЛЬКО если оно реально вернуло 200: requests не бросает
+    # исключение на 4xx, и раньше 403-заставка засчитывалась за успех.
+    def _probe(px):
         try:
-            requests.get(f"{api_base}/posts", headers=headers, timeout=10)
-            use_proxy = None
-        except:
-            pass
+            r = requests.get(f"{api_base}/posts", headers=headers,
+                             proxies=px, timeout=30)
+            return r.status_code == 200
+        except Exception:
+            return False
+
+    use_proxy = proxies
+    if not _probe(proxies) and _probe(None):
+        use_proxy = None
+        logger.info(f"[{domain}] прокси недоступен, работаем напрямую")
 
     category = articles['category']
     category_id = None
@@ -158,7 +187,7 @@ def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry
                 # Поиск существующей
                 try:
                     r = requests.get(f"{api_base}/categories", headers=headers,
-                                     params={'search': category}, proxies=use_proxy, timeout=10)
+                                     params={'search': category}, proxies=use_proxy, timeout=30)
                     if r.status_code == 200:
                         for cat in r.json():
                             if cat['name'].lower() == category.lower():
@@ -171,7 +200,7 @@ def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry
                 if category_id is None:
                     try:
                         r = requests.post(f"{api_base}/categories", headers=headers,
-                                          json={'name': category}, proxies=use_proxy, timeout=10)
+                                          json={'name': category}, proxies=use_proxy, timeout=30)
                         if r.status_code == 201:
                             category_id = r.json()['id']
                         else:
@@ -191,7 +220,7 @@ def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry
                 img_headers['Content-Disposition'] = f'attachment; filename="article_{article_num}.{ext}"'
                 try:
                     r = requests.post(f"{api_base}/media", headers=img_headers,
-                                      data=img['data'], proxies=use_proxy, timeout=30)
+                                      data=img['data'], proxies=use_proxy, timeout=90)
                     if r.status_code == 201:
                         media_id = r.json()['id']
                         logger.info(f"[{domain}] Изображение загружено: ID {media_id}")
@@ -208,8 +237,29 @@ def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry
                 'featured_media': media_id if media_id else 0
             }
 
-            r = requests.post(f"{api_base}/posts", headers=headers,
-                              json=post_data, proxies=use_proxy, timeout=30)
+            try:
+                r = requests.post(f"{api_base}/posts", headers=headers,
+                                  json=post_data, proxies=use_proxy, timeout=120)
+            except Exception as post_err:
+                # Прокси рвёт крупные POST (~20 КБ тела): пост на сайте создаётся,
+                # а ответ до нас не доходит. Проверяем по заголовку, прежде чем
+                # считать это ошибкой — иначе при повторе получим дубль.
+                logger.warning(f"[{domain}] соединение оборвалось ({post_err}), "
+                               f"проверяю, создался ли пост")
+                time.sleep(5)
+                found = find_post_by_title(api_base, headers, use_proxy, content['title'])
+                if found:
+                    logger.info(f"[{domain}] ✓ Статья запланирована: ID={found}, "
+                                f"дата={pub_time.strftime('%Y-%m-%d %H:%M')} "
+                                f"(подтверждено проверкой после обрыва)")
+                    results.append({
+                        'domain': domain, 'article': article_num, 'topic': topic,
+                        'post_id': found, 'scheduled': pub_time.strftime('%Y-%m-%d %H:%M'),
+                        'status': 'success', 'title': content['title']
+                    })
+                    time.sleep(3)
+                    continue
+                raise
 
             if r.status_code == 201:
                 post = r.json()
@@ -258,8 +308,11 @@ def main():
                         help='Диапазон сдвига между сайтами, например 0-1')
     parser.add_argument('--article-step', type=str, default=None,
                         help='Диапазон между статьями внутри сайта, например 2-3')
-    parser.add_argument('--image-backend', choices=['google', 'fal'], default='fal',
-                        help='Бэкенд генерации обложек (google устарел, по умолчанию fal)')
+    parser.add_argument('--image-backend', choices=['openai', 'fal', 'google'], default='openai',
+                        help='Бэкенд генерации обложек (по умолчанию openai gpt-image-2; '
+                             'google — нет квоты, fal — платный баланс)')
+    parser.add_argument('--image-quality', choices=['low', 'medium', 'high'], default='low',
+                        help='Качество обложки для openai-бэкенда (low ~$0.005/шт)')
     args = parser.parse_args()
 
     logger.info("=" * 60)
@@ -289,8 +342,11 @@ def main():
         lo, hi = args.article_step.split('-')
         sched_kwargs['article_step'] = (int(lo), int(hi))
 
-    # Генерация расписания
-    schedules = build_schedule(len(sites), **sched_kwargs)
+    # Генерация расписания.
+    # Дат на сайт — по самому «длинному» сайту плана: zip ниже обрежет лишние.
+    # Иначе у сайта с двойным анкором (7 статей) последняя статья молча терялась.
+    max_articles = max(len(p['articles']) for p in plan.values())
+    schedules = build_schedule(len(sites), articles_per_site=max_articles, **sched_kwargs)
 
     # Показать расписание
     if args.schedule_only or args.dry_run:
@@ -326,7 +382,13 @@ def main():
         api_key=os.getenv('OPENAI_API_KEY'),
         model=os.getenv('OPENAI_MODEL', 'gpt-5.4')
     )
-    if args.image_backend == 'fal':
+    if args.image_backend == 'openai':
+        image_gen = OpenAIImageGenerator(
+            api_key=os.getenv('OPENAI_API_KEY'),
+            model=os.getenv('OPENAI_IMAGE_MODEL', 'gpt-image-2'),
+            quality=args.image_quality,
+        )
+    elif args.image_backend == 'fal':
         image_gen = FalImageGenerator(
             api_key=os.getenv('FAL_KEY'),
             model=os.getenv('FAL_IMAGE_MODEL', 'fal-ai/nano-banana'),
