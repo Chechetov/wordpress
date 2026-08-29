@@ -7,3 +7,5 @@ __pycache__/
 sites.json
 campaign2_sites.json
 campaign4_sites.json
+campaign3_sites.json
+reports/recovery/*_sites.json

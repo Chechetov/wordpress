@@ -1,0 +1,18 @@
+[
+  {
+    "domain": "photo-test.ru",
+    "topic": "Как проходит проверка по охране труда на предприятии",
+    "post_id": 258,
+    "scheduled": "2026-05-01 09:26",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "arshta.org",
+    "topic": "Профессиональные стандарты для работников лабораторий",
+    "post_id": 221,
+    "scheduled": "2026-05-04 15:13",
+    "status": "success",
+    "has_image": true
+  }
+]

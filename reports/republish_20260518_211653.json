@@ -1,0 +1,64 @@
+[
+  {
+    "domain": "photo-test.ru",
+    "topic": "Зачем предприятию специалист по охране труда",
+    "post_id": 246,
+    "scheduled": "2026-04-27 18:53",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "photo-test.ru",
+    "topic": "Основные требования охраны труда на производстве",
+    "post_id": 248,
+    "scheduled": "2026-04-28 15:16",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "photo-test.ru",
+    "topic": "Обучение по охране труда в Красноярске: программы и форматы",
+    "post_id": 250,
+    "scheduled": "2026-04-30 17:41",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "photo-test.ru",
+    "topic": "Как проходит проверка по охране труда на предприятии",
+    "status": "error",
+    "error": "Response ended prematurely",
+    "scheduled": "2026-05-01 09:26"
+  },
+  {
+    "domain": "photo-test.ru",
+    "topic": "Обязанности работодателя по охране труда",
+    "post_id": 254,
+    "scheduled": "2026-05-02 20:54",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "photo-test.ru",
+    "topic": "Типичные нарушения охраны труда и как их избежать",
+    "post_id": 256,
+    "scheduled": "2026-05-03 18:46",
+    "status": "success",
+    "has_image": true
+  },
+  {
+    "domain": "arshta.org",
+    "topic": "Профессиональные стандарты для работников лабораторий",
+    "status": "error",
+    "error": "Response ended prematurely",
+    "scheduled": "2026-05-04 15:13"
+  },
+  {
+    "domain": "rt-covid19.ru",
+    "topic": "Где работают лаборанты химического анализа: отрасли и предприятия Красноярского края",
+    "post_id": 227,
+    "scheduled": "2026-04-28 14:53",
+    "status": "success",
+    "has_image": true
+  }
+]

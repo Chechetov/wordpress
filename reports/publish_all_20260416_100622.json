@@ -1,0 +1,258 @@
+[
+  {
+    "domain": "arshta.org",
+    "article": 1,
+    "topic": "Переподготовка по пожарной безопасности 256 часов: кому нужна и что включает",
+    "scheduled": "2026-04-16 10:34",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "arshta.org",
+    "article": 2,
+    "topic": "ТОП-5 нарушений пожарной безопасности на предприятиях",
+    "scheduled": "2026-04-18 19:49",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "arshta.org",
+    "article": 3,
+    "topic": "Требования к ответственному за пожарную безопасность",
+    "scheduled": "2026-04-20 13:28",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "arshta.org",
+    "article": 4,
+    "topic": "Как провести аудит пожарной безопасности на объекте",
+    "scheduled": "2026-04-22 10:12",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "arshta.org",
+    "article": 5,
+    "topic": "Что изменилось в противопожарных нормах в 2026 году",
+    "scheduled": "2026-04-24 19:26",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "arshta.org",
+    "article": 6,
+    "topic": "Средства пожаротушения: виды и правила использования",
+    "scheduled": "2026-04-26 13:40",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "vsenamag.ru",
+    "article": 1,
+    "topic": "Профессиональная переподготовка на инженера-механика: полное руководство",
+    "post_id": 215,
+    "scheduled": "2026-04-16 16:49",
+    "status": "success",
+    "title": "Переподготовка на инженера-механика: полное руководство"
+  },
+  {
+    "domain": "vsenamag.ru",
+    "article": 2,
+    "topic": "ТОП-5 городов России с наибольшим спросом на инженеров",
+    "post_id": 217,
+    "scheduled": "2026-04-18 09:34",
+    "status": "success",
+    "title": "ТОП-5 городов России с высоким спросом на инженеров"
+  },
+  {
+    "domain": "vsenamag.ru",
+    "article": 3,
+    "topic": "Какие допуски и сертификаты нужны инженеру-механику",
+    "scheduled": "2026-04-19 13:50",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='vsenamag.ru', port=443): Read timed out."
+  },
+  {
+    "domain": "vsenamag.ru",
+    "article": 4,
+    "topic": "Зарплаты инженеров в России: обзор по регионам",
+    "scheduled": "2026-04-20 16:35",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='vsenamag.ru', port=443): Read timed out."
+  },
+  {
+    "domain": "vsenamag.ru",
+    "article": 5,
+    "topic": "Как выбрать направление инженерной переподготовки",
+    "post_id": 223,
+    "scheduled": "2026-04-22 09:46",
+    "status": "success",
+    "title": "Как выбрать направление инженерной переподготовки"
+  },
+  {
+    "domain": "vsenamag.ru",
+    "article": 6,
+    "topic": "Инженер на производстве: реальный опыт и советы новичкам",
+    "post_id": 225,
+    "scheduled": "2026-04-23 13:19",
+    "status": "success",
+    "title": "Инженер на производстве: опыт и советы новичкам"
+  },
+  {
+    "domain": "oybox.by",
+    "article": 1,
+    "topic": "Профессиональная переподготовка по АСУ ТП: программа и возможности",
+    "scheduled": "2026-04-16 15:27",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='oybox.by', port=443): Read timed out."
+  },
+  {
+    "domain": "oybox.by",
+    "article": 2,
+    "topic": "ТОП-5 языков программирования для промышленной автоматизации",
+    "post_id": 238,
+    "scheduled": "2026-04-18 11:54",
+    "status": "success",
+    "title": "ТОП-5 языков для промышленной автоматизации"
+  },
+  {
+    "domain": "oybox.by",
+    "article": 3,
+    "topic": "Интернет вещей в промышленности: примеры внедрения",
+    "post_id": 240,
+    "scheduled": "2026-04-20 19:46",
+    "status": "success",
+    "title": "Интернет вещей в промышленности: примеры внедрения"
+  },
+  {
+    "domain": "oybox.by",
+    "article": 4,
+    "topic": "Кибербезопасность на промышленных предприятиях",
+    "scheduled": "2026-04-22 15:25",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='oybox.by', port=443): Read timed out."
+  },
+  {
+    "domain": "oybox.by",
+    "article": 5,
+    "topic": "Что такое цифровой двойник и как он используется на производстве",
+    "post_id": 244,
+    "scheduled": "2026-04-24 11:16",
+    "status": "success",
+    "title": "Цифровой двойник: как работает и зачем производству"
+  },
+  {
+    "domain": "oybox.by",
+    "article": 6,
+    "topic": "Облачные решения для управления производственными процессами",
+    "post_id": 246,
+    "scheduled": "2026-04-26 19:45",
+    "status": "success",
+    "title": "Облачные решения для управления производством"
+  },
+  {
+    "domain": "studio-santech.ru",
+    "article": 1,
+    "topic": "Профессиональная переподготовка: как выбрать программу и не ошибиться",
+    "post_id": 240,
+    "scheduled": "2026-04-16 17:47",
+    "status": "success",
+    "title": "Профессиональная переподготовка: как выбрать программу"
+  },
+  {
+    "domain": "studio-santech.ru",
+    "article": 2,
+    "topic": "ТОП-5 направлений переподготовки с лучшими перспективами",
+    "post_id": 242,
+    "scheduled": "2026-04-18 18:09",
+    "status": "success",
+    "title": "ТОП-5 направлений переподготовки с лучшими перспективами"
+  },
+  {
+    "domain": "studio-santech.ru",
+    "article": 3,
+    "topic": "Чем отличается повышение квалификации от профессиональной переподготовки",
+    "scheduled": "2026-04-19 08:50",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='studio-santech.ru', port=443): Read timed out."
+  },
+  {
+    "domain": "studio-santech.ru",
+    "article": 4,
+    "topic": "Как совмещать работу и обучение: проверенные стратегии",
+    "post_id": 246,
+    "scheduled": "2026-04-21 17:38",
+    "status": "success",
+    "title": "Как совмещать работу и обучение без выгорания"
+  },
+  {
+    "domain": "studio-santech.ru",
+    "article": 5,
+    "topic": "Диплом о переподготовке: что он даёт и где признаётся",
+    "post_id": 248,
+    "scheduled": "2026-04-23 18:42",
+    "status": "success",
+    "title": "Диплом о переподготовке: что даёт и где признаётся"
+  },
+  {
+    "domain": "studio-santech.ru",
+    "article": 6,
+    "topic": "Как взрослому человеку вернуться к учёбе: мотивация и практика",
+    "post_id": 250,
+    "scheduled": "2026-04-25 08:43",
+    "status": "success",
+    "title": "Как взрослому вернуться к учёбе: мотивация и практика"
+  },
+  {
+    "domain": "photoset-msk.ru",
+    "article": 1,
+    "topic": "Академии дополнительного образования: как выбрать надёжную",
+    "scheduled": "2026-04-16 16:26",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='photoset-msk.ru', port=443): Read timed out."
+  },
+  {
+    "domain": "photoset-msk.ru",
+    "article": 2,
+    "topic": "ТОП-5 ошибок при выборе программы дополнительного образования",
+    "scheduled": "2026-04-17 12:40",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='photoset-msk.ru', port=443): Read timed out."
+  },
+  {
+    "domain": "photoset-msk.ru",
+    "article": 3,
+    "topic": "Рынок дополнительного образования в России: цифры и тренды",
+    "post_id": 238,
+    "scheduled": "2026-04-19 18:45",
+    "status": "success",
+    "title": "Рынок дополнительного образования в России: цифры и тренды"
+  },
+  {
+    "domain": "photoset-msk.ru",
+    "article": 4,
+    "topic": "Как работодатели проверяют дипломы и сертификаты",
+    "scheduled": "2026-04-21 16:33",
+    "status": "error",
+    "error": "HTTPSConnectionPool(host='photoset-msk.ru', port=443): Read timed out."
+  },
+  {
+    "domain": "photoset-msk.ru",
+    "article": 5,
+    "topic": "Инвестиции в образование сотрудников: зачем это бизнесу",
+    "post_id": 242,
+    "scheduled": "2026-04-23 12:55",
+    "status": "success",
+    "title": "Инвестиции в обучение сотрудников: выгода для бизнеса"
+  },
+  {
+    "domain": "photoset-msk.ru",
+    "article": 6,
+    "topic": "Государственные программы поддержки переобучения работников",
+    "post_id": 244,
+    "scheduled": "2026-04-25 18:52",
+    "status": "success",
+    "title": "Господдержка переобучения работников: программы и условия"
+  }
+]

@@ -1,0 +1,266 @@
+[
+  {
+    "domain": "photo-test.ru",
+    "article": 1,
+    "topic": "Медицинский регистратор: как пройти обучение и начать карьеру",
+    "scheduled": "2026-04-16 14:51",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "photo-test.ru",
+    "article": 2,
+    "topic": "ТОП-5 медицинских профессий без высшего образования",
+    "scheduled": "2026-04-17 17:25",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "photo-test.ru",
+    "article": 3,
+    "topic": "Как устроена работа регистратуры в поликлинике",
+    "scheduled": "2026-04-19 15:09",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "photo-test.ru",
+    "article": 4,
+    "topic": "Цифровизация здравоохранения: электронные карты и МИС",
+    "scheduled": "2026-04-21 14:17",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "photo-test.ru",
+    "article": 5,
+    "topic": "Обязанности медицинского регистратора: полный обзор",
+    "scheduled": "2026-04-23 17:39",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "photo-test.ru",
+    "article": 6,
+    "topic": "Как устроиться на работу в поликлинику без медицинского образования",
+    "scheduled": "2026-04-25 15:27",
+    "status": "error",
+    "error": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+  },
+  {
+    "domain": "pravo-or.org",
+    "article": 1,
+    "topic": "ТОП-5 мест, где можно обучиться на медицинского регистратора в Санкт-Петербурге",
+    "post_id": 232,
+    "scheduled": "2026-04-16 17:50",
+    "status": "success",
+    "title": "ТОП-5 мест для обучения медицинского регистратора в СПб"
+  },
+  {
+    "domain": "pravo-or.org",
+    "article": 2,
+    "topic": "Как стать санитаром: требования и перспективы в Петербурге",
+    "post_id": 234,
+    "scheduled": "2026-04-18 15:10",
+    "status": "success",
+    "title": "Как стать санитаром в Петербурге: требования и перспективы"
+  },
+  {
+    "domain": "pravo-or.org",
+    "article": 3,
+    "topic": "Зарплаты медицинских работников в Санкт-Петербурге: обзор",
+    "post_id": 236,
+    "scheduled": "2026-04-20 13:52",
+    "status": "success",
+    "title": "Зарплаты медработников в Санкт-Петербурге: обзор"
+  },
+  {
+    "domain": "pravo-or.org",
+    "article": 4,
+    "topic": "Какие медицинские профессии не требуют высшего образования",
+    "post_id": 238,
+    "scheduled": "2026-04-22 17:38",
+    "status": "success",
+    "title": "Медицинские профессии без высшего образования"
+  },
+  {
+    "domain": "pravo-or.org",
+    "article": 5,
+    "topic": "Работа в медицине Петербурга: вакансии и условия",
+    "post_id": 240,
+    "scheduled": "2026-04-23 15:41",
+    "status": "success",
+    "title": "Работа в медицине Петербурга: вакансии и условия"
+  },
+  {
+    "domain": "pravo-or.org",
+    "article": 6,
+    "topic": "Где искать первую работу в медицинской сфере в СПб",
+    "post_id": 242,
+    "scheduled": "2026-04-24 13:16",
+    "status": "success",
+    "title": "Где искать первую работу в медицине в Санкт‑Петербурге"
+  },
+  {
+    "domain": "edhall.ru",
+    "article": 1,
+    "topic": "Обучение на медицинского регистратора в СПб: где и как",
+    "post_id": 177,
+    "scheduled": "2026-04-16 17:41",
+    "status": "success",
+    "title": "Обучение медицинского регистратора в СПб: где и как"
+  },
+  {
+    "domain": "edhall.ru",
+    "article": 2,
+    "topic": "ТОП-5 районов Петербурга для молодых специалистов",
+    "post_id": 179,
+    "scheduled": "2026-04-18 12:49",
+    "status": "success",
+    "title": "ТОП-5 районов Петербурга для молодых специалистов"
+  },
+  {
+    "domain": "edhall.ru",
+    "article": 3,
+    "topic": "Образовательные возможности Санкт-Петербурга для взрослых",
+    "post_id": 181,
+    "scheduled": "2026-04-20 11:51",
+    "status": "success",
+    "title": "Образовательные возможности Петербурга для взрослых"
+  },
+  {
+    "domain": "edhall.ru",
+    "article": 4,
+    "topic": "Средние зарплаты в Петербурге по отраслям",
+    "post_id": 183,
+    "scheduled": "2026-04-22 17:29",
+    "status": "success",
+    "title": "Средние зарплаты в Петербурге по отраслям: обзор"
+  },
+  {
+    "domain": "edhall.ru",
+    "article": 5,
+    "topic": "Как переехать в Петербург и найти работу: практический гид",
+    "post_id": 185,
+    "scheduled": "2026-04-24 12:22",
+    "status": "success",
+    "title": "Переезд в Петербург и поиск работы: практический гид"
+  },
+  {
+    "domain": "edhall.ru",
+    "article": 6,
+    "topic": "Бесплатные образовательные программы в Санкт-Петербурге",
+    "post_id": 187,
+    "scheduled": "2026-04-26 11:32",
+    "status": "success",
+    "title": "Бесплатные образовательные программы в Санкт‑Петербурге"
+  },
+  {
+    "domain": "colorit-dv.ru",
+    "article": 1,
+    "topic": "Курсы сантехника в СПб: где получить профессию",
+    "post_id": 142,
+    "scheduled": "2026-04-16 18:29",
+    "status": "success",
+    "title": "Курсы сантехника в СПб: где получить профессию"
+  },
+  {
+    "domain": "colorit-dv.ru",
+    "article": 2,
+    "topic": "ТОП-5 рабочих профессий с зарплатой выше офисных",
+    "post_id": 144,
+    "scheduled": "2026-04-18 09:08",
+    "status": "success",
+    "title": "ТОП-5 рабочих профессий с зарплатой выше офисных"
+  },
+  {
+    "domain": "colorit-dv.ru",
+    "article": 3,
+    "topic": "Требования к слесарям-сантехникам по профстандартам",
+    "post_id": 146,
+    "scheduled": "2026-04-19 10:22",
+    "status": "success",
+    "title": "Требования к слесарям-сантехникам по профстандартам"
+  },
+  {
+    "domain": "colorit-dv.ru",
+    "article": 4,
+    "topic": "Рынок труда в сфере ЖКХ Петербурга",
+    "post_id": 148,
+    "scheduled": "2026-04-21 18:44",
+    "status": "success",
+    "title": "Рынок труда ЖКХ Петербурга: вакансии, зарплаты, тренды"
+  },
+  {
+    "domain": "colorit-dv.ru",
+    "article": 5,
+    "topic": "Как стать сантехником: от обучения до первого заказа",
+    "post_id": 150,
+    "scheduled": "2026-04-23 09:45",
+    "status": "success",
+    "title": "Как стать сантехником: путь к первому заказу"
+  },
+  {
+    "domain": "colorit-dv.ru",
+    "article": 6,
+    "topic": "Современные инструменты и материалы для сантехнических работ",
+    "post_id": 152,
+    "scheduled": "2026-04-25 10:55",
+    "status": "success",
+    "title": "Современные инструменты и материалы для сантехнических работ"
+  },
+  {
+    "domain": "centr-audita.ru",
+    "article": 1,
+    "topic": "Курсы санитара: что входит в программу и кому подходит",
+    "post_id": 145,
+    "scheduled": "2026-04-16 20:33",
+    "status": "success",
+    "title": "Курсы санитара: программа и кому они подходят"
+  },
+  {
+    "domain": "centr-audita.ru",
+    "article": 2,
+    "topic": "ТОП-5 больниц Петербурга, где набирают младший медперсонал",
+    "post_id": 147,
+    "scheduled": "2026-04-18 15:55",
+    "status": "success",
+    "title": "ТОП-5 больниц Петербурга, где нужен младший персонал"
+  },
+  {
+    "domain": "centr-audita.ru",
+    "article": 3,
+    "topic": "Профессия санитар: обязанности и требования",
+    "post_id": 149,
+    "scheduled": "2026-04-20 12:28",
+    "status": "success",
+    "title": "Профессия санитар: обязанности и требования"
+  },
+  {
+    "domain": "centr-audita.ru",
+    "article": 4,
+    "topic": "Как получить медицинскую книжку: пошаговая инструкция",
+    "post_id": 151,
+    "scheduled": "2026-04-22 20:16",
+    "status": "success",
+    "title": "Как получить медицинскую книжку: пошаговая инструкция"
+  },
+  {
+    "domain": "centr-audita.ru",
+    "article": 5,
+    "topic": "Разница между санитаром и медсестрой: обязанности и обучение",
+    "post_id": 153,
+    "scheduled": "2026-04-24 15:22",
+    "status": "success",
+    "title": "Санитар и медсестра: разница в обязанностях и обучении"
+  },
+  {
+    "domain": "centr-audita.ru",
+    "article": 6,
+    "topic": "Работа в больнице без высшего образования: реальные варианты",
+    "post_id": 155,
+    "scheduled": "2026-04-26 12:25",
+    "status": "success",
+    "title": "Работа в больнице без высшего образования: варианты"
+  }
+]
