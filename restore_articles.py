@@ -118,7 +118,9 @@ def generate_one(row, generator, target_words):
 
 def build_wxr(domain_ascii, domain, articles, author):
     """Собирает WXR по одному домену."""
-    site = f"https://{domain}"
+    # Адрес берём в punycode: именно он записан у сайта в siteurl, и по нему
+    # импортёр сверяет внутренние ссылки. Кириллическое имя тут разошлось бы.
+    site = f"https://{domain_ascii}"
     cats = {}
     for a in articles:
         cats[a["category_slug"]] = a["category"]
@@ -275,7 +277,7 @@ def main():
         for a in sorted(articles, key=lambda x: x["post_id"]):
             result_rows.append({
                 "Домен": domain, "ID": a["post_id"],
-                "URL": f'https://{domain}/{a["category_slug"]}/{a["slug"]}/',
+                "URL": f'https://{ascii_d}/{a["category_slug"]}/{a["slug"]}/',
                 "Заголовок": a["title"], "Дата": a["date"],
                 "Денежная": "да" if a["money"] else "",
                 "Анкор": a["anchor"], "Целевая ссылка": a["link"],
