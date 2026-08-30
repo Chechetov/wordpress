@@ -74,7 +74,11 @@ def load_content_plan(path: str = "content_plan.csv"):
                 'topic': row['Тема статьи'],
                 'anchor': row.get('Анкор', ''),
                 'url': row.get('Ссылка', ''),
-                'type': row.get('Тип', '')
+                'type': row.get('Тип', ''),
+                # Слаг задаётся, когда статью восстанавливают на прежний адрес:
+                # WordPress иначе соберёт его из заголовка, и URL разойдётся
+                # с тем, что уже стоит в индексе.
+                'slug': row.get('Слаг', '').strip()
             })
     return plan
 
@@ -128,26 +132,40 @@ def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry
         'Content-Type': 'application/json'
     }
 
-    api_base = f"{url}/wp-json/wp/v2"
     results = []
 
-    # Определяем, нужен ли прокси для этого сайта.
-    # Прокси — вариант по умолчанию: часть доноров за Cloudflare и прямые
-    # запросы к ним получают «Just a moment...» (403). Уходим на прямое
-    # соединение ТОЛЬКО если оно реально вернуло 200: requests не бросает
-    # исключение на 4xx, и раньше 403-заставка засчитывалась за успех.
-    def _probe(px):
+    # Подбираем рабочую пару «путь REST + канал».
+    #
+    # Путь: на части доноров nginx закрывает /wp-json (отдаёт 403 сам, без
+    # WordPress), но штатный запасной вход «?rest_route=» при этом работает.
+    # Канал: доноры стоят за Cloudflare, и прямой запрос с недоверенного IP
+    # получает заставку «Just a moment...» с кодом 403. Успехом считаем
+    # ТОЛЬКО настоящий 200 — requests не бросает исключение на 4xx, и раньше
+    # заставка засчитывалась за рабочее соединение.
+    def _probe(base, px):
         try:
-            r = requests.get(f"{api_base}/posts", headers=headers,
+            r = requests.get(f"{base}/posts", headers=headers,
                              proxies=px, timeout=30)
             return r.status_code == 200
         except Exception:
             return False
 
+    api_base = None
     use_proxy = proxies
-    if not _probe(proxies) and _probe(None):
-        use_proxy = None
-        logger.info(f"[{domain}] прокси недоступен, работаем напрямую")
+    for _base in (f"{url}/wp-json/wp/v2", f"{url}/?rest_route=/wp/v2"):
+        for _px, _label in ((proxies, "через прокси"), (None, "напрямую")):
+            if _probe(_base, _px):
+                api_base, use_proxy = _base, _px
+                logger.info(f"[{domain}] REST: {_base} ({_label})")
+                break
+        if api_base:
+            break
+
+    if api_base is None:
+        api_base = f"{url}/wp-json/wp/v2"
+        logger.warning(f"[{domain}] REST не ответил ни по одному пути "
+                       f"(ни /wp-json, ни ?rest_route=, ни через прокси, ни напрямую) — "
+                       f"пробуем штатный путь, но публикация, скорее всего, не пройдёт")
 
     category = articles['category']
     category_id = None
@@ -236,6 +254,11 @@ def publish_to_site(site_config, articles, schedule, content_gen, image_gen, dry
                 'categories': [category_id],
                 'featured_media': media_id if media_id else 0
             }
+            # Восстановление на прежний адрес: без явного слага WordPress
+            # соберёт свой из заголовка, и статья встанет по новому URL —
+            # старый останется 404, а вместе с ним пропадёт и ссылочный вес.
+            if article_data.get('slug'):
+                post_data['slug'] = article_data['slug']
 
             try:
                 r = requests.post(f"{api_base}/posts", headers=headers,
