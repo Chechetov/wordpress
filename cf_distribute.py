@@ -107,6 +107,18 @@ def errors(d):
     return "; ".join(e.get("message", "?") for e in (d.get("errors") or [])) or "неизвестно"
 
 
+def token_for(slot):
+    """Токен аккаунта из .env.
+
+    Первый аккаунт сети завёлся раньше этой схемы имён, и его токен лежит под
+    именем CLOUDFLARE_API_TOKEN. Без этой оговорки CF-1 молча пропускался.
+    """
+    token = os.getenv(f"CLOUDFLARE_TOKEN_{slot}")
+    if not token and slot == "CF1":
+        token = os.getenv("CLOUDFLARE_API_TOKEN")
+    return token
+
+
 def sniff_delimiter(path):
     """Файлы реестра ведутся руками, разделитель бывает и «,» и «;»."""
     with open(path, encoding="utf-8-sig") as f:
@@ -153,7 +165,7 @@ def main():
     missing = []
     for label in by_account:
         slot = slot_of(label)
-        if not slot or not os.getenv(f"CLOUDFLARE_TOKEN_{slot}"):
+        if not slot or not token_for(slot):
             missing.append(f"{label} -> CLOUDFLARE_TOKEN_{slot or '??'}")
     if missing:
         print("Нет токенов, эти аккаунты пропущу:")
@@ -163,7 +175,7 @@ def main():
 
     for label, items in by_account.items():
         slot = slot_of(label)
-        token = os.getenv(f"CLOUDFLARE_TOKEN_{slot}") if slot else None
+        token = token_for(slot) if slot else None
         if not token:
             continue
 
