@@ -166,7 +166,9 @@ def main():
     for (domain, post_id), pub in sorted(pubs.items()):
         title = (pub.get("title") or "").strip()
         topic = (pub.get("topic") or "").strip()
-        date = (pub.get("scheduled") or "")[:10]
+        # Время публикации сохраняем целиком: восстановленная статья должна
+        # встать в архив ровно туда, где стояла прежняя
+        date = (pub.get("scheduled") or "").strip()
 
         # --- анкор: ищем в реестре по ID, затем по слагу заголовка,
         #     затем по дате — так находятся статьи, чей заголовок не записан
@@ -174,7 +176,7 @@ def main():
         if not anchor_row and title:
             anchor_row = anch_slug.get((domain, slugify(title)))
         if not anchor_row and not title:
-            same_day = [r for r in anch_date.get((domain, date), [])
+            same_day = [r for r in anch_date.get((domain, date[:10]), [])
                         if not r["Слаг записи"].strip()
                         or r["Слаг записи"].strip() in TITLE_BY_SLUG]
             if len(same_day) == 1:

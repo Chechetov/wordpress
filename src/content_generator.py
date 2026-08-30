@@ -30,7 +30,8 @@ class ContentGenerator:
         topic: str, 
         anchor: str, 
         url: str, 
-        target_words: int = 1750
+        target_words: int = 1750,
+        title: Optional[str] = None
     ) -> Dict[str, str]:
         """
         Генерация контента статьи с встраиванием анкорной ссылки
@@ -40,13 +41,16 @@ class ContentGenerator:
             anchor: Анкор для ссылки
             url: URL для ссылки
             target_words: Целевое количество слов
+            title: Готовый заголовок. Задаётся при восстановлении статьи:
+                WordPress собирает слаг из заголовка, поэтому свой заголовок
+                увёл бы статью на новый адрес, а прежний остался бы 404.
             
         Returns:
             Словарь с заголовком и содержанием статьи в HTML формате
         """
         try:
             # Создаем промпт для генерации статьи
-            prompt = self._create_content_prompt(topic, anchor, url, target_words)
+            prompt = self._create_content_prompt(topic, anchor, url, target_words, title)
             
             logger.info(f"Генерация контента для темы: {topic}")
             
@@ -70,7 +74,14 @@ class ContentGenerator:
             content = response.choices[0].message.content
             
             # Парсим заголовок и содержание
-            title, body = self._parse_content(content, topic)
+            parsed_title, body = self._parse_content(content, topic)
+            if title:
+                # Заголовок задан снаружи — он определяет адрес статьи,
+                # поэтому подменяем и H1 в теле, чтобы страница не разъезжалась
+                body = re.sub(r'<h1.*?>.*?</h1>', f'<h1>{title}</h1>', body,
+                              count=1, flags=re.S)
+            else:
+                title = parsed_title
             
             # Проверяем, что ссылка встроена корректно
             if not self._validate_link_insertion(body, anchor, url):
@@ -89,11 +100,18 @@ class ContentGenerator:
             logger.error(f"Ошибка при генерации контента для темы '{topic}': {str(e)}")
             raise
     
-    def _create_content_prompt(self, topic: str, anchor: str, url: str, target_words: int) -> str:
+    def _create_content_prompt(self, topic: str, anchor: str, url: str,
+                               target_words: int, title: Optional[str] = None) -> str:
         """Создание промпта для генерации контента"""
-        
+
+        fixed_title = ""
+        if title:
+            fixed_title = (f'\n0. Заголовок H1 задан и меняться не должен, '
+                           f'слово в слово: "{title}"\n')
+
         return f"""
 Напиши качественную, SEO-оптимизированную статью на тему "{topic}".
+{fixed_title}
 
 ТРЕБОВАНИЯ:
 1. Объем статьи: ~{target_words} слов
@@ -104,7 +122,7 @@ class ContentGenerator:
 6. Ссылка должна выглядеть естественно и быть релевантной контексту
 
 СТРУКТУРА СТАТЬИ:
-- Привлекательный заголовок H1 (не более 60 символов)
+- Заголовок H1 (если задан выше — ровно он, иначе привлекательный, до 60 символов)
 - Краткое вступление (2-3 предложения)
 - Основная часть с 3-4 подзаголовками
 - Практические советы или примеры
