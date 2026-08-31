@@ -32,29 +32,36 @@ SSH_KEY = os.path.expanduser(os.getenv("PBN_SSH_KEY", "~/.ssh/pbn_recovery"))
 
 # Скрипт, который бежит на сервере: обходит адреса и отдаёт по строке на каждый.
 REMOTE = r'''
-import json, subprocess, sys
+import json, subprocess
+from concurrent.futures import ThreadPoolExecutor
 targets = json.load(open("/tmp/verify_targets.json", encoding="utf-8"))
 public = targets.get("public", False)
-out = []
-for t in targets["items"]:
+
+def check(t):
     host, path = t["host"], t["path"]
     if public:
-        url = "https://%s%s" % (host, path)
-        cmd = ["curl", "-sL", "--max-time", "25", "-w", "\n__CODE__%{http_code}", url]
+        cmd = ["curl", "-sL", "--max-time", "25",
+               "-w", "\n__CODE__%{http_code}", "https://%s%s" % (host, path)]
     else:
-        url = "http://127.0.0.1" + path
         cmd = ["curl", "-s", "--max-time", "25", "-H", "Host: " + host,
-               "-w", "\n__CODE__%{http_code}", url]
+               "-H", "X-Forwarded-Proto: https",
+               "-w", "\n__CODE__%{http_code}", "http://127.0.0.1" + path]
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=40)
         body, _, code = r.stdout.rpartition("__CODE__")
-    except Exception as exc:
+        code = code.strip()
+    except Exception:
         body, code = "", "ERR"
-    row = {"host": host, "path": path, "code": code.strip()}
+    row = {"host": host, "path": path, "code": code}
     if t.get("link"):
         row["link_ok"] = ('href="%s"' % t["link"]) in body
         row["anchor_ok"] = bool(t.get("anchor")) and t["anchor"] in body
-    out.append(row)
+    return row
+
+# Сайты живут на одной маленькой машине: больше восьми параллельных запросов
+# она просто не переварит, PHP-FPM настроен на шесть процессов.
+with ThreadPoolExecutor(max_workers=8) as pool:
+    out = list(pool.map(check, targets["items"]))
 print(json.dumps(out, ensure_ascii=False))
 '''
 
