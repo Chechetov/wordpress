@@ -1,0 +1,2 @@
+Домен,Аккаунт,Старый IP,Новый IP,SSL было,SSL стало,Always HTTPS,NS1,NS2,Челлендж,Дата
+yellodigital.ru,luna.trevino@4pbn.com,45.95.203.95,157.228.135.19,Flexible(auto),Full,уже был включён,ridge.ns.cloudflare.com,rita.ns.cloudflare.com,"Search Protection: 45.95.203.95 заменён на 157.228.135.19; проверено с сервера по IPv4 = 200",2026-08-31
