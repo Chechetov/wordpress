@@ -12,3 +12,5 @@ reports/recovery/*_sites.json
 
 # сгенерированные тексты — промежуточный кеш, итог лежит в articles/restore/wxr
 articles/restore/cache/
+reports/recovery/cf_access.csv
+reports/nikita.tsv
