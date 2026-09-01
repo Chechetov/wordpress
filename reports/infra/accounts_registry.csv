@@ -1,12 +1,11 @@
 Сервис;Адрес/логин;Что держит;Заведён;Статус;Примечание
 FirstByte (биллинг);nikita@4pbn.com;сервер 157.228.135.19 — 20 восстановленных доноров, плюс vps01 185.189.14.84;;активен;вход требует пароль и Яндекс-капчу
 Timeweb Cloud;xf45932;vps02 46.229.214.208 и vps03 147.45.249.166 — 19 живых доноров;;активен;баланс 472 руб, оплачено до 15.09.2026
-Cloudflare CF-1;Chechetov.alex@gmail.com;top-audit.ru, 2semechki.ru, drunk-fish.ru, yellodigital.ru;2026-08-29;активен;NS art/tiffany
+Cloudflare CF-1;Chechetov.alex@gmail.com;стандарт72.рф (учётки на домен нет, живёт здесь); 2026-08-29;активен;NS art/tiffany. Ещё 19 неделегированных зон-дублей — мусор, можно почистить
 Cloudflare CF-старый;неизвестен;carrie-place.ru и, судя по NS, зоны 20 упавших доменов;;доступа нет;NS jaxson/danica — стоит попробовать восстановить доступ
-Cloudflare CF-2;cf2@4pbn.com;kgdink.ru, avtogear62.ru, omegabay.ru, kakudobrit.ru;;не заведён;
-Cloudflare CF-3;cf3@4pbn.com;prforce.ru, доступныйсервис.рф, ledpnz.ru, mai-hoshi.ru;;не заведён;
-Cloudflare CF-4;cf4@4pbn.com;techfile.ru, elintel.ru, promplo.ru, стандарт72.рф;;не заведён;
-Cloudflare CF-5;cf5@4pbn.com;unit-org.ru, speciallabel.ru, pro-covers.ru, property-in-alanya.ru;;не заведён;
+Cloudflare CF-2;уточняется;2semechki.ru;;не заведён;почта на нейтральном домене — адрес уточняется
+Cloudflare CF-3;уточняется;доступныйсервис.рф;;не заведён;почта на нейтральном домене — адрес уточняется
 Регистратор панель №1;неизвестен;14 из 20 упавших доменов;;активен;реселлер DOMAINSHOP
 Регистратор REG.RU;n.shuravin@gmail.com;6 из 20 упавших доменов;;активен;по 7 доменам нет идентификации через Госуслуги, дедлайн 01.09.2026
 Почта инфраструктуры;catch-all на 4pbn.com;адреса для регистрации во всех сервисах;;включить;свой mail.4pbn.com на Beget, SPF уже настроен
+Cloudflare (17 родных аккаунтов);см. reports/recovery/repoint_log.csv;17 доменов, по одному на аккаунт, у каждого своя пара NS;;активны;пароли у оператора, в nikita.tsv (в gitignore)
