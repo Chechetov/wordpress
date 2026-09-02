@@ -62,12 +62,18 @@ fi
 say "1/6 Ставлю на новом сервере тот же стек"
 d 'export DEBIAN_FRONTEND=noninteractive
    apt-get update -qq
-   apt-get install -y -qq nginx mariadb-server php8.2-fpm php8.2-mysql php8.2-xml \
-       php8.2-curl php8.2-gd php8.2-mbstring php8.2-zip php8.2-intl rsync curl less >/dev/null
+   # Версию PHP берём из репозитория цели: Debian 12 даёт 8.2, Ubuntu 24.04 — 8.3.
+   # Жёстко зашитая версия рушит установку целиком, вместе с mariadb.
+   PHPV=$(apt-cache search --names-only "^php8\.[0-9]+-fpm$" | grep -oE "8\.[0-9]+" | sort -V | tail -1)
+   [ -n "$PHPV" ] || PHPV=8.3
+   echo "  PHP в репозитории цели: $PHPV"
+   apt-get install -y -qq nginx mariadb-server php$PHPV-fpm php$PHPV-mysql php$PHPV-xml \
+       php$PHPV-curl php$PHPV-gd php$PHPV-mbstring php$PHPV-zip php$PHPV-intl rsync curl less >/dev/null
    command -v wp >/dev/null || { curl -sS -o /usr/local/bin/wp \
        https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
        chmod +x /usr/local/bin/wp; }
-   systemctl enable --now nginx mariadb php8.2-fpm >/dev/null 2>&1
+   systemctl enable --now nginx mariadb "php$PHPV-fpm" >/dev/null 2>&1
+   echo "$PHPV" > /root/.pbn_phpv
    echo "  стек готов: nginx $(nginx -v 2>&1 | grep -oE "[0-9.]+"), php $(php -v | head -1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")"'
 
 say "2/6 Своп, если памяти мало"
@@ -101,7 +107,12 @@ done
 
 say "5/6 Переношу конфигурацию nginx и сертификат origin"
 s 'tar czf - -C /etc/nginx sites-available ssl' | d 'tar xzf - -C /etc/nginx'
-d 'mkdir -p /etc/nginx/sites-enabled
+d 'PHPV=$(cat /root/.pbn_phpv 2>/dev/null || echo 8.3)
+   # имя сокета php-fpm зависит от версии, а вхосты приехали с версией источника
+   sed -i -E "s|php[0-9]+\.[0-9]+-fpm\.sock|php$PHPV-fpm.sock|g" /etc/nginx/sites-available/* 2>/dev/null || true
+   # отдельная директива http2 появилась в nginx 1.25, на 1.24 роняет проверку
+   nginx -v 2>&1 | grep -qE "1\.(1[0-9]|2[0-4])\." && sed -i "/^[[:space:]]*http2 on;[[:space:]]*$/d" /etc/nginx/sites-available/* 2>/dev/null
+   mkdir -p /etc/nginx/sites-enabled
    for f in /etc/nginx/sites-available/*; do
      [ "$(basename "$f")" = "default" ] && continue
      ln -sf "$f" "/etc/nginx/sites-enabled/$(basename "$f")"
