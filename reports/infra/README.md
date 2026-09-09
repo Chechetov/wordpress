@@ -42,9 +42,15 @@ Cloudflare прямо запрещает массовое автоматичес
 
 1. Адрес почты берётся из catch-all: `cf6@4pbn.com`, ящик заводить не нужно.
 2. Регистрация на dash.cloudflare.com, подтверждение письма.
-3. **My Profile → API Tokens → Create Token → Custom token**, права:
-   `Account → Zone : Edit`, `Zone → DNS : Edit`, `Zone → Zone Settings : Edit`.
-   Область — All accounts / All zones.
+3. **Manage account → Account API tokens → Create a token → Start from scratch**,
+   права: `Zone → DNS : Edit`, `Zone → Zone : Read`,
+   `Zone → Zone Settings : Edit`, `Zone → Zone WAF Rules : Edit`.
+   Область политики — All Domains, Expiration — No expiration,
+   Client IP filtering — пусто.
+
+   Права на WAF обязательны: без них `cf_allowlist_swap.py` не сможет
+   поменять IP в правиле Search Protection, и за токеном придётся идти
+   в аккаунт второй раз. Набор совпадает с `ПОРЯДОК_ПЕРЕЕЗДА.md`.
 4. Токен в `.env` строкой `CLOUDFLARE_TOKEN_CF6=...` (файл в gitignore).
 5. Строка в `accounts_registry.csv`: адрес, что держит, дата.
 
